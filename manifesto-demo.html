@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manifesto — CSI Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0A0A0A;
+    color: #F0F0F0;
+    font-family: 'Inter', -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+
+  #trail {
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #manifesto {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .section-label {
+    position: absolute;
+    top: 48px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #333;
+    white-space: nowrap;
+    z-index: 2;
+  }
+
+  .block-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12vw;
+  }
+
+  .block {
+    font-size: clamp(26px, 3.4vw, 52px);
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.03em;
+    text-align: center;
+    max-width: 960px;
+  }
+
+  .word {
+    display: inline-block;
+  }
+
+  .progress-bar {
+    position: absolute;
+    bottom: 48px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    z-index: 2;
+  }
+  .progress-bar span {
+    display: block;
+    width: 20px;
+    height: 1px;
+    background: #222;
+    transition: background 0.4s, width 0.4s;
+  }
+  .progress-bar span.active {
+    background: #555;
+    width: 36px;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="trail"></canvas>
+
+<section id="manifesto">
+  <p class="section-label">Manifesto</p>
+  <div class="progress-bar" id="progressBar">
+    <span></span><span></span><span></span><span></span>
+  </div>
+</section>
+
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ── Ambient trail ── */
+  (function () {
+    const canvas = document.getElementById('trail');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const E = { trails: 20, size: 60, friction: 0.5, dampening: 0.25, tension: 0.988 };
+    const pos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    const f = { phase: 0, frequency: 0.002, amplitude: 10, offset: 220,
+      update() { this.phase += this.frequency; return Math.round(this.offset + Math.sin(this.phase) * this.amplitude); }
+    };
+    function Node() { this.x = pos.x; this.y = pos.y; this.vx = 0; this.vy = 0; }
+    function Line(s) {
+      this.spring = s + (Math.random() * 0.1 - 0.05);
+      this.friction = E.friction + (Math.random() * 0.01 - 0.005);
+      this.nodes = [];
+      for (let i = 0; i < E.size; i++) this.nodes.push(new Node());
+    }
+    Line.prototype.update = function () {
+      let s = this.spring, n = this.nodes[0];
+      n.vx += (pos.x - n.x) * s; n.vy += (pos.y - n.y) * s;
+      for (let i = 0; i < this.nodes.length; i++) {
+        n = this.nodes[i];
+        if (i > 0) {
+          const p = this.nodes[i - 1];
+          n.vx += (p.x - n.x) * s; n.vy += (p.y - n.y) * s;
+          n.vx += p.vx * E.dampening; n.vy += p.vy * E.dampening;
+        }
+        n.vx *= this.friction; n.vy *= this.friction;
+        n.x += n.vx; n.y += n.vy; s *= E.tension;
+      }
+    };
+    Line.prototype.draw = function () {
+      let x = this.nodes[0].x, y = this.nodes[0].y;
+      ctx.beginPath(); ctx.moveTo(x, y);
+      for (let i = 1; i < this.nodes.length - 2; i++) {
+        const n = this.nodes[i], nx = this.nodes[i + 1];
+        x = (n.x + nx.x) * 0.5; y = (n.y + nx.y) * 0.5;
+        ctx.quadraticCurveTo(n.x, n.y, x, y);
+      }
+      const n = this.nodes[this.nodes.length - 2];
+      ctx.quadraticCurveTo(n.x, n.y, this.nodes[this.nodes.length - 1].x, this.nodes[this.nodes.length - 1].y);
+      ctx.stroke();
+    };
+    const lines = [];
+    for (let i = 0; i < E.trails; i++) lines.push(new Line(0.4 + (i / E.trails) * 0.025));
+    document.addEventListener('mousemove', e => { pos.x = e.clientX; pos.y = e.clientY; });
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+    (function render() {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'hsla(' + f.update() + ',10%,95%,0.035)';
+      ctx.lineWidth = 0.75;
+      for (let i = 0; i < E.trails; i++) { lines[i].update(); lines[i].draw(); }
+      requestAnimationFrame(render);
+    })();
+  })();
+
+  /* ── Manifesto: word-by-word reveal ── */
+  const COPY = [
+    "Software connected information. Intelligence connects decisions.",
+    "Organizations are drowning in data. Yet struggling to act.",
+    "The future belongs not to those who collect, but to those who act.",
+    "Intelligence should exist across every interaction. Every workflow. Every decision."
+  ];
+
+  const section  = document.getElementById('manifesto');
+  const barItems = document.querySelectorAll('.progress-bar span');
+  const TOTAL    = COPY.length;
+  const W_DUR    = 0.38;  // timeline units per word reveal
+  const FADE     = 0.25;  // block fade-in/out
+
+  /* Build DOM */
+  const blockWraps = COPY.map((text) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'block-wrap';
+    const p = document.createElement('p');
+    p.className = 'block';
+    text.split(' ').forEach((word, j) => {
+      if (j > 0) p.appendChild(document.createTextNode(' '));
+      const span = document.createElement('span');
+      span.className = 'word';
+      span.textContent = word;
+      p.appendChild(span);
+    });
+    wrap.appendChild(p);
+    section.insertBefore(wrap, document.getElementById('progressBar'));
+    return wrap;
+  });
+
+  /* Initial state: words hidden below, blocks 1-3 invisible */
+  gsap.set(blockWraps.slice(1), { autoAlpha: 0 });
+  gsap.set(section.querySelectorAll('.word'), { opacity: 0, y: 14, rotation: 6, transformOrigin: '50% 50%' });
+
+  function updateBar(idx) {
+    barItems.forEach((s, i) => s.classList.toggle('active', i === idx));
+  }
+  updateBar(0);
+
+  /* Timeline */
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#manifesto',
+      start: 'top top',
+      end: () => '+=' + (TOTAL * window.innerHeight),
+      pin: true,
+      scrub: 2,
+      onUpdate() {
+        let maxOp = -1, activeIdx = 0;
+        blockWraps.forEach((wrap, i) => {
+          const op = gsap.getProperty(wrap, 'opacity');
+          if (op > maxOp) { maxOp = op; activeIdx = i; }
+        });
+        updateBar(activeIdx);
+      }
+    }
+  });
+
+  blockWraps.forEach((wrap, blockIdx) => {
+    const words = Array.from(wrap.querySelectorAll('.word'));
+
+    /* Show block (first block already visible) */
+    if (blockIdx > 0) {
+      tl.to(wrap, { autoAlpha: 1, duration: 0.05 });
+    }
+
+    /* Reveal: word by word, slide up from below */
+    words.forEach(word => {
+      tl.to(word, { opacity: 1, y: 0, rotation: 0, duration: W_DUR, ease: 'power3.out' });
+    });
+
+    /* Hold with all words visible */
+    tl.to({}, { duration: 0.5 });
+
+    /* Exit: word by word, slide down (skip last block) */
+    if (blockIdx < TOTAL - 1) {
+      words.forEach(word => {
+        tl.to(word, { opacity: 0, y: 14, duration: W_DUR * 0.7, ease: 'power3.in' });
+      });
+      tl.to(wrap, { autoAlpha: 0, duration: 0.05 });
+    }
+  });
+</script>
+</body>
+</html>

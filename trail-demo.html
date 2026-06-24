@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manifesto Trail — CSI Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0A0A0A;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+  canvas {
+    display: block;
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+  var canvas = document.getElementById('c');
+  var ctx    = canvas.getContext('2d');
+
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  /* ── Config ── */
+  var E = {
+    trails:    20,
+    size:      60,
+    friction:  0.5,
+    dampening: 0.25,
+    tension:   0.988
+  };
+
+  /* ── Mouse target ── */
+  var pos = { x: canvas.width / 2, y: canvas.height / 2 };
+
+  /* ── Subtle cold-white oscillator (210–230 hue, monokromatik) ── */
+  var f = {
+    phase:     0,
+    frequency: 0.002,
+    amplitude: 10,
+    offset:    220,
+    update: function () {
+      this.phase += this.frequency;
+      return Math.round(this.offset + Math.sin(this.phase) * this.amplitude);
+    }
+  };
+
+  /* ── Node ── */
+  function Node() {
+    this.x = pos.x;
+    this.y = pos.y;
+    this.vx = 0;
+    this.vy = 0;
+  }
+
+  /* ── Line (chain of nodes) ── */
+  function Line(spring) {
+    this.spring  = spring + (Math.random() * 0.1 - 0.05);
+    this.friction = E.friction + (Math.random() * 0.01 - 0.005);
+    this.nodes   = [];
+    for (var i = 0; i < E.size; i++) this.nodes.push(new Node());
+  }
+
+  Line.prototype.update = function () {
+    var s = this.spring;
+    var n = this.nodes[0];
+
+    n.vx += (pos.x - n.x) * s;
+    n.vy += (pos.y - n.y) * s;
+
+    for (var i = 0; i < this.nodes.length; i++) {
+      n = this.nodes[i];
+      if (i > 0) {
+        var p = this.nodes[i - 1];
+        n.vx += (p.x - n.x) * s;
+        n.vy += (p.y - n.y) * s;
+        n.vx += p.vx * E.dampening;
+        n.vy += p.vy * E.dampening;
+      }
+      n.vx *= this.friction;
+      n.vy *= this.friction;
+      n.x  += n.vx;
+      n.y  += n.vy;
+      s    *= E.tension;
+    }
+  };
+
+  Line.prototype.draw = function () {
+    var n, x = this.nodes[0].x, y = this.nodes[0].y;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    for (var i = 1; i < this.nodes.length - 2; i++) {
+      n = this.nodes[i];
+      var nx = this.nodes[i + 1];
+      x = (n.x + nx.x) * 0.5;
+      y = (n.y + nx.y) * 0.5;
+      ctx.quadraticCurveTo(n.x, n.y, x, y);
+    }
+    n = this.nodes[this.nodes.length - 2];
+    var last = this.nodes[this.nodes.length - 1];
+    ctx.quadraticCurveTo(n.x, n.y, last.x, last.y);
+    ctx.stroke();
+  };
+
+  /* ── Init lines ── */
+  var lines = [];
+  for (var i = 0; i < E.trails; i++) {
+    lines.push(new Line(0.4 + (i / E.trails) * 0.025));
+  }
+
+  ctx.frame   = 0;
+  ctx.running = true;
+
+  /* ── Input ── */
+  document.addEventListener('mousemove', function (e) {
+    pos.x = e.clientX;
+    pos.y = e.clientY;
+  });
+
+  document.addEventListener('touchmove', function (e) {
+    e.preventDefault();
+    pos.x = e.touches[0].clientX;
+    pos.y = e.touches[0].clientY;
+  }, { passive: false });
+
+  window.addEventListener('resize', function () {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  /* ── Render loop (from snippet) ── */
+  function render() {
+    if (ctx.running) {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'hsla(' + f.update() + ',10%,95%,0.035)';
+      ctx.lineWidth   = 0.75;
+      for (var e, t = 0; t < E.trails; t++) {
+        (e = lines[t]).update();
+        e.draw();
+      }
+      ctx.frame++;
+      window.requestAnimationFrame(render);
+    }
+  }
+
+  render();
+</script>
+</body>
+</html>
