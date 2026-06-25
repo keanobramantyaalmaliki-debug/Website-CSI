@@ -261,6 +261,30 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 ---
 
+## Hero Ambient — Particle "C" Assembly ✅ Implemented (in progress)
+
+**Lokasi:** Modul IIFE pertama di dalam `<script>` utama (sebelum `/* ── Three.js sphere ── */`), render ke `<canvas id="hero-ambient">` di dalam `#hero` (z-index -1). Plus blok `.hero-meta` (pojok kanan bawah: "Systems Online" + live clock WIB + koordinat 6°10′S 106°49′E).
+
+**Konsep (current state — checkpoint sebelum eksplorasi CSI):**
+- **Idle:** 440 partikel titik tersebar di SELURUH hero, mengalir via flow-field (layered trig pseudo-curl), wrap di tepi layar → sebaran merata, idle benar-benar acak (bukan bentuk huruf).
+- **Assembly progresif:** jarak kursor ke pusat zona C (CENTER x:0.76, y:0.46) menentukan `aT`. Antara `nearR` (th*0.42) dan `farR` (th*1.25) partikel merakit jadi huruf **C tipografis** yang di-sample dari glyph Inter 500 (offscreen canvas → pixel alpha jadi target points). Smoothstep transisi.
+- **Assembly motion:** critically-damped lerp (`p.x += (tx-x)*k`, k=0.10*ae) — glide masuk, TANPA spring/bounce (sengaja dihindari, user tidak mau "toon force mantul").
+- **Grenade burst:** saat kursor pernah masuk zona C (`aT>0.6`) lalu keluar (`aT<0.25`), tiap partikel dapat impuls kecepatan radial keluar dari pusat (sp 6–8, acak) → meledak ke segala arah, friction 0.94 + flow nangkep balik.
+- **Mobile (`hover:none`):** auto assemble↔scatter pelan via sin wave (fallback tanpa kursor).
+- **Entry:** `.hero-meta` fade-in bareng trail di `playEntry()` timeline.
+
+**Knob utama:** `PCOUNT=440`, `th=Math.min(W,H)*0.42`, `nearR/farR`, flow `*0.30`, lerp `k=0.10`, burst `sp=6+rand*8`.
+
+**Evolusi (untuk konteks revert):**
+1. v1: random node constellation (abstrak) — ditolak, terlalu generik.
+2. v2: single-line arc "C" — ditolak, terlalu seperti diagram 1 garis.
+3. v3: woven mesh "C" (3 ring + diagonal) — ditolak, kelihatan network-graph cliché.
+4. v4 (current): flow-field particle → typographic C assembly + grenade burst. ✅ disukai.
+
+**Sedang dibahas (belum diimplementasi):** opsi mengganti/menambah jadi "CSI". Rekomendasi: JANGAN ganti partikel jadi huruf (turun kelas jadi word-cloud). Opsi terkuat = morph assembly berurutan C→S→I saat hover (partikel tetap titik). Alternatif: watermark CSI besar super-redup di background.
+
+---
+
 ## Global Background — Ambient Trail ✅ Implemented
 
 - 20 rantai node, tiap trail 60 node, spring physics
