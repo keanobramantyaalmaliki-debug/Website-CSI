@@ -129,15 +129,20 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 **Interaksi:**
 - Hover `.item-desc` → floating founder photo mengikuti cursor (kanan cursor, 20px offset)
-- Pop-in: scale `0.05→1`, spring easing `cubic-bezier(0.34, 1.56, 0.64, 1)`, 0.7s
+- Pop-in: scale `0.05→1`, spring easing `cubic-bezier(0.34, 1.56, 0.64, 1)`, **1.1s** (diperlambat dari 0.7s untuk feel lebih anggun). Hiding tetap cepat `0.2s` agar transisi antar baris tidak terasa lambat.
 - Momentum tilt: `velocityX * 0.4`
 - Text scramble 420ms saat hover
 - Cursor `+` crosshair saat hover (custom cursor, bukan native)
 - Custom cursor muncul di item-level hover, bukan hanya desc-level
 
+**Foto (✅ terpasang):** Folder `Photo-Founder-section/`.
+- Thumbnail card (`.thumb img`, `object-position: center 22%` untuk fokus wajah dari foto full-body): `Photo profile.jpg`
+- Floating hover image di-swap per item via `data-photo`:
+  - Award 2023 → `Foto Award.jpeg`
+  - Speaking 2024 → `Foto Speaking.jpg`
+
 **Konten pending:**
-- Foto founder (placeholder `fp-placeholder`)
-- Konten pencapaian nyata (saat ini placeholder)
+- Konten pencapaian nyata (teks masih placeholder — dikonfirmasi ke founder)
 
 ---
 
@@ -146,6 +151,10 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 **Konsep:** Implied authority — coverage sektor tanpa nama klien. Pola McKinsey/Deloitte.
 
 **Visual:** Arc-spine — lingkaran besar (center di luar viewport kiri), 5 sector sebagai titik di kurva. Teks dirotasi mengikuti tangen kurva.
+
+**Enrichment (✅):** Guide-arc (dua, di `DR-20` & `DR+26`) + tick-marks perpendikular (minor sepanjang span, major di slot sektor). Stroke redup monokrom (`arc-path` 0.085, `arc-guide` 0.05, tick 0.10 / major 0.20). Progress dots dihapus (tidak perlu). Label aktif: `01 — Public Services` dst, transisi fade.
+
+**Arc bleed (✅):** Rentang visual dipisah dari spacing item. `DHALF` (`asin(DVH*0.46/DR)`) tetap untuk posisi sektor + tick, tapi arc-path + dua guide pakai `DVISHALF` (`asin(DVH*0.62/DR)`) sehingga garis lengkung menembus tepi atas-bawah viewport (~12% bleed tiap sisi) dan tidak terlihat terpotong di tengah layar.
 
 **Interaksi:** GSAP ScrollTrigger scrub, section di-pin `5 × 100vh`.
 
@@ -231,13 +240,19 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 - Product Builder
 - Full Stack Engineer
 
+**Enrichment editorial (✅):** Tiap role-item kini punya index `01–04`, metadata per baris (`Full-time · Remote · Growth` dst — work-arrangement masih asumsi, perlu konfirmasi), dan hover diperkuat (judul geser `translateX(12px)`, fill gradient redup, index/meta/panah menyala). "What you bring" label + tag diperbesar/diterangkan, tag punya hover-to-brighten. Padding role-header & body-inner pakai `clamp(10px,1.4vw,26px)` agar panah tidak terpotong oleh `overflow:hidden`.
+
 **Interaksi — dua layer:**
 
 *Scan (hover):* Preview image di posisi cursor, curtain reveal/close animation.
 
 *Read (click):* Accordion expand, role lain `opacity: 0.2`.
 
-**Catatan:** Preview images masih gradient placeholder — ganti dengan foto editorial.
+**Foto preview (✅ terpasang):** Folder `Photo-careers-section/`, di-set via `background-image` pada `.preview-N .preview-inner` (`cover`, center) + overlay gelap `rgba(10,10,10,0.32)` agar tetap restrained.
+- 01 Innovation & Growth Manager → `innovation & growth manager.jpg`
+- 02 Technical Lead → `technical lead.jpg`
+- 03 Product Builder → `product builder.jpg`
+- 04 Full Stack Engineer → `fullstack engineer.jpg`
 
 ---
 
@@ -310,6 +325,8 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 ## Pending / To Do
 
-- [ ] Foto founder (ganti `fp-placeholder` dengan foto editorial Fami Maliki)
-- [ ] Konten pencapaian founder yang nyata (3 item — dikonfirmasi ke founder)
-- [ ] Preview images Careers (ganti gradient placeholder dengan foto editorial)
+- [x] Foto founder — terpasang (`Photo-Founder-section/`: profile thumbnail + Award + Speaking)
+- [x] Preview images Careers — terpasang (`Photo-careers-section/`: 4 role)
+- [ ] Konten pencapaian founder yang nyata (saat ini placeholder — dikonfirmasi ke founder)
+- [ ] Konfirmasi metadata Careers (work-arrangement `Full-time/Remote/Hybrid` + divisi masih asumsi)
+- [ ] Navbar blur/scrim saat scroll keluar hero (dibahas, ditunda — user mau nanti)
