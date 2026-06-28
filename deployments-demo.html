@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Selected Deployments — cogniti</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0A0A0A;
+    color: #F0F0F0;
+    font-family: 'Inter', -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── Deployments section ── */
+  #deployments {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Arc SVG — full viewport, pointer-events none */
+  .arc-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .arc-path {
+    fill: none;
+    stroke: rgba(255,255,255,0.045);
+    stroke-width: 1;
+  }
+
+  /* Left panel */
+  .deploy-left {
+    position: absolute;
+    top: 0; left: 0;
+    width: 38%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 2.5vw;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .deploy-section-label {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #2A2A2A;
+    margin-bottom: 28px;
+  }
+
+  .deploy-headline {
+    font-size: clamp(28px, 2.6vw, 42px);
+    font-weight: 300;
+    letter-spacing: -0.025em;
+    color: #D0D0D0;
+    line-height: 1.25;
+    margin-bottom: 48px;
+  }
+
+  .deploy-copy-wrap {
+    position: relative;
+  }
+
+  .deploy-copy-label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #333;
+    margin-bottom: 14px;
+    min-height: 14px;
+  }
+
+  .deploy-copy {
+    position: absolute;
+    top: 28px; left: 0;
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: #777;
+    letter-spacing: 0.01em;
+    opacity: 0;
+    max-width: 360px;
+    /* No CSS transition — GSAP handles enter/exit */
+  }
+
+  /* Arc container — right side */
+  .arc-container {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Each arc item — positioned & rotated via JS */
+  .arc-item {
+    position: absolute;
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    transform-origin: left center;
+    will-change: transform, opacity;
+    white-space: nowrap;
+  }
+
+  .arc-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #2A2A2A;
+    flex-shrink: 0;
+    align-self: center;
+    transition: background 0.3s ease;
+  }
+
+  .arc-num {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: #2A2A2A;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s ease;
+    min-width: 28px;
+  }
+
+  .arc-category {
+    font-size: clamp(22px, 2.2vw, 34px);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: #333;
+    transition: color 0.3s ease;
+  }
+
+  .arc-region {
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #222;
+    padding: 3px 8px;
+    border: 1px solid #1A1A1A;
+    transition: color 0.3s ease, border-color 0.3s ease;
+    align-self: center;
+    margin-left: 4px;
+  }
+
+  /* Active state */
+  .arc-item.is-active .arc-dot     { background: #555; }
+  .arc-item.is-active .arc-num     { color: #888; }
+  .arc-item.is-active .arc-category { color: #D0D0D0; }
+  .arc-item.is-active .arc-region  { color: #444; border-color: #2A2A2A; }
+
+</style>
+</head>
+<body>
+
+<section id="deployments">
+
+  <!-- Arc SVG spine -->
+  <svg class="arc-svg" id="arcSvg">
+    <path class="arc-path" id="arcPath" d=""/>
+  </svg>
+
+  <!-- Left panel -->
+  <div class="deploy-left">
+    <p class="deploy-section-label">Selected Deployment Environments</p>
+    <h2 class="deploy-headline">Built for real-world environments where decisions matter.</h2>
+    <div class="deploy-copy-wrap" id="deployCopyWrap">
+      <p class="deploy-copy-label" id="deployCopyLabel"></p>
+      <p class="deploy-copy" data-index="0">Digital transformation initiatives for citizen engagement, operational visibility, and service coordination.</p>
+      <p class="deploy-copy" data-index="1">Integrated monitoring environments connecting assets, operations, and situational awareness.</p>
+      <p class="deploy-copy" data-index="2">Operational intelligence deployments supporting visibility, workflow optimization, and decision support.</p>
+      <p class="deploy-copy" data-index="3">Intelligence-driven engagement frameworks for modern guest experiences.</p>
+      <p class="deploy-copy" data-index="4">Connected environments that improve communication, participation, and collective action.</p>
+    </div>
+  </div>
+
+  <!-- Arc items -->
+  <div class="arc-container" id="arcContainer">
+    <div class="arc-item" data-index="0">
+      <span class="arc-dot"></span>
+      <span class="arc-num">01</span>
+      <span class="arc-category">Public Services</span>
+      <span class="arc-region">Indonesia</span>
+    </div>
+    <div class="arc-item" data-index="1">
+      <span class="arc-dot"></span>
+      <span class="arc-num">02</span>
+      <span class="arc-category">Infrastructure</span>
+      <span class="arc-region">Indonesia</span>
+    </div>
+    <div class="arc-item" data-index="2">
+      <span class="arc-dot"></span>
+      <span class="arc-num">03</span>
+      <span class="arc-category">Logistics</span>
+      <span class="arc-region">International</span>
+    </div>
+    <div class="arc-item" data-index="3">
+      <span class="arc-dot"></span>
+      <span class="arc-num">04</span>
+      <span class="arc-category">Hospitality</span>
+      <span class="arc-region">Southeast Asia</span>
+    </div>
+    <div class="arc-item" data-index="4">
+      <span class="arc-dot"></span>
+      <span class="arc-num">05</span>
+      <span class="arc-category">Communities</span>
+      <span class="arc-region">Indonesia</span>
+    </div>
+  </div>
+
+
+</section>
+
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  const ITEMS      = document.querySelectorAll('.arc-item');
+  const COPIES     = document.querySelectorAll('.deploy-copy');
+  const COPY_LABEL = document.getElementById('deployCopyLabel');
+  const N = ITEMS.length;
+
+  const CATEGORIES = ['Public Services', 'Infrastructure', 'Logistics', 'Hospitality', 'Communities'];
+
+  let activeCopyIndex = -1;
+
+  function transitionCopy(newIndex) {
+    if (newIndex === activeCopyIndex) return;
+
+    const oldCopy = activeCopyIndex >= 0 ? COPIES[activeCopyIndex] : null;
+    const newCopy = newIndex >= 0 ? COPIES[newIndex] : null;
+
+    // Exit old copy — slide up
+    if (oldCopy) {
+      gsap.killTweensOf(oldCopy);
+      gsap.to(oldCopy, {
+        opacity: 0, y: -10,
+        duration: 0.18, ease: 'power2.in',
+        onComplete: () => { oldCopy.classList.remove('active'); gsap.set(oldCopy, { y: 0 }); }
+      });
+    }
+
+    // Enter new copy — slide up from below
+    if (newCopy) {
+      gsap.killTweensOf(newCopy);
+      newCopy.classList.add('active');
+      gsap.fromTo(newCopy,
+        { opacity: 0, y: 14 },
+        { opacity: 1, y: 0, duration: 0.38, ease: 'power2.out', delay: 0.1 }
+      );
+    }
+
+    // Update sector label
+    if (COPY_LABEL) {
+      gsap.to(COPY_LABEL, {
+        opacity: 0, duration: 0.1,
+        onComplete: () => {
+          COPY_LABEL.textContent = newIndex >= 0 ? `${String(newIndex + 1).padStart(2, '0')} — ${CATEGORIES[newIndex]}` : '';
+          gsap.to(COPY_LABEL, { opacity: 1, duration: 0.2 });
+        }
+      });
+    }
+
+    activeCopyIndex = newIndex;
+  }
+
+  /* ── Arc geometry ──────────────────────────────────────────
+     Large circle whose center sits LEFT of the viewport.
+     The visible portion is the right-side arc that bows gently
+     toward screen center. Active item (angle=0) is at the
+     arc's rightmost point — horizontally centered on right half.
+  ───────────────────────────────────────────────────────────── */
+  const VW = window.innerWidth;
+  const VH = window.innerHeight;
+
+  const R       = VH * 1.2;          // large radius → gentle, slow curve
+  const activeX = VW * 0.50;         // x where the active item appears
+  const CX      = activeX - R;       // circle center (negative = left of screen)
+  const CY      = VH * 0.50;
+
+  // Half-angle: arc spans nearly full viewport height
+  const arcHalf = Math.asin(Math.min(VH * 0.46 / R, 0.999));
+
+  // Spread items across 90% of the visible arc
+  const itemSpacing     = (arcHalf * 2 * 0.9) / (N - 1);
+  const activeThreshold = itemSpacing * 0.55;
+
+  /* ── Draw SVG arc spine ── */
+  function buildArcPath() {
+    const pts = [];
+    const steps = 100;
+    for (let i = 0; i <= steps; i++) {
+      const t     = i / steps;
+      const angle = arcHalf - t * arcHalf * 2;   // top → bottom
+      const x     = (CX + R * Math.cos(angle)).toFixed(1);
+      const y     = (CY + R * Math.sin(angle)).toFixed(1);
+      pts.push(`${i === 0 ? 'M' : 'L'} ${x},${y}`);
+    }
+    return pts.join(' ');
+  }
+  document.getElementById('arcPath').setAttribute('d', buildArcPath());
+
+  /* ── Position & opacity per item ── */
+  function getPos(itemIndex, progress) {
+    const scrollOffset = progress * itemSpacing * (N - 1);
+    const angle        = itemIndex * itemSpacing - scrollOffset;
+    return {
+      x:          CX + R * Math.cos(angle),
+      y:          CY + R * Math.sin(angle),
+      tangentDeg: angle * (180 / Math.PI),
+      opacity:    Math.max(0, 1 - Math.abs(angle) / (itemSpacing * 2.8)),
+      dist:       Math.abs(angle)
+    };
+  }
+
+  /* ── Update loop ── */
+  let currentActive = -1;
+
+  function updateArc(progress) {
+    let newActive = -1;
+
+    ITEMS.forEach((item, i) => {
+      const { x, y, tangentDeg, opacity, dist } = getPos(i, progress);
+      item.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${tangentDeg.toFixed(2)}deg)`;
+      item.style.opacity   = opacity.toFixed(3);
+      if (dist < activeThreshold) newActive = i;
+    });
+
+    if (newActive !== currentActive) {
+      currentActive = newActive;
+      ITEMS.forEach((el, i) => el.classList.toggle('is-active', i === newActive));
+      transitionCopy(newActive);
+    }
+  }
+
+  /* ── GSAP pin + scrub ── */
+  const proxy = { val: 0 };
+  gsap.to(proxy, {
+    val: 1,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '#deployments',
+      start:   'top top',
+      end:     `+=${N * 100}%`,
+      scrub:   1.4,
+      pin:     true,
+      anticipatePin: 1,
+      onUpdate: (self) => updateArc(self.progress)
+    }
+  });
+
+  // Run immediately + after fonts/layout settle
+  updateArc(0);
+  requestAnimationFrame(() => {
+    updateArc(0);
+    transitionCopy(0); // force initial copy visible
+  });
+</script>
+</body>
+</html>

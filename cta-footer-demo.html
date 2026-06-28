@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CTA + Footer — cogniti</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0A0A0A;
+    color: #F0F0F0;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  /* ── Entry animation ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* ═══════════════════════════
+     CTA SECTION
+  ═══════════════════════════ */
+  #cta {
+    padding: 140px 2.5vw 120px;
+    border-top: 1px solid #1A1A1A;
+    text-align: center;
+  }
+
+  .cta-label {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 32px;
+  }
+
+  .cta-headline {
+    font-size: clamp(52px, 6.5vw, 100px);
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    line-height: 1.04;
+    color: #D0D0D0;
+    margin-bottom: 80px;
+  }
+
+  /* ── Sentence form ── */
+  .form-sentence {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 56px;
+    align-items: center;
+  }
+
+  .form-line {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0;
+    line-height: 2.6;
+  }
+
+  .form-prose {
+    font-size: 15px;
+    font-weight: 300;
+    color: #888;
+    white-space: nowrap;
+    padding: 0 8px;
+  }
+  .form-prose:first-child { padding-left: 0; }
+
+  .form-inline {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #444;
+    color: #C8C8C8;
+    font-size: 15px;
+    font-weight: 300;
+    font-family: inherit;
+    letter-spacing: -0.01em;
+    padding: 3px 2px 5px;
+    min-width: 160px;
+    width: auto;
+    outline: none;
+    transition: border-color 0.3s ease, color 0.3s ease;
+  }
+  .form-inline::placeholder { color: #666; }
+  .form-inline:focus {
+    border-bottom-color: #777;
+    color: #F0F0F0;
+  }
+  .form-inline:focus::placeholder { color: #888; }
+
+  /* widen specific fields */
+  .form-inline.f-name  { min-width: 180px; }
+  .form-inline.f-org   { min-width: 200px; }
+  .form-inline.f-email { min-width: 240px; }
+
+  /* ── Divider ── */
+  .form-sep {
+    width: 100%;
+    height: 1px;
+    background: #111;
+    margin: 40px 0;
+  }
+
+  /* ── Inquiry ── */
+  .inquiry-label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 18px;
+  }
+
+  .inquiry-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 52px;
+  }
+
+  .inquiry-pill {
+    background: transparent;
+    border: 1px solid #444;
+    color: #888;
+    font-size: 9px;
+    font-family: inherit;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: border-color 0.22s ease, color 0.22s ease, background 0.22s ease;
+  }
+  .inquiry-pill:hover  { border-color: #666; color: #B0B0B0; }
+  .inquiry-pill.active { border-color: #777; color: #D0D0D0; background: #111; }
+
+  /* ── Message ── */
+  .message-label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 14px;
+  }
+
+  .form-textarea {
+    width: 100%;
+    max-width: 680px;
+    background: transparent;
+    border: 1px solid #444;
+    color: #C8C8C8;
+    font-size: 14px;
+    font-weight: 300;
+    font-family: inherit;
+    letter-spacing: 0.01em;
+    line-height: 1.8;
+    padding: 16px 20px;
+    resize: vertical;
+    min-height: 136px;
+    outline: none;
+    transition: border-color 0.3s ease;
+    display: block;
+    margin: 0 auto 52px;
+    text-align: left;
+  }
+  .form-textarea::placeholder { color: #666; }
+  .form-textarea:focus { border-color: #666; }
+
+  /* ── Submit row ── */
+  .form-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .form-note {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: #777;
+  }
+
+  .form-submit {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #999;
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0;
+    transition: color 0.25s ease;
+  }
+  .form-submit:hover { color: #E0E0E0; }
+  .form-submit:hover .submit-arrow { transform: translateX(6px); }
+  .submit-arrow {
+    font-size: 15px;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-block;
+  }
+  .form-submit.sending {
+    color: #222;
+    pointer-events: none;
+  }
+
+  /* ═══════════════════════════
+     FOOTER
+  ═══════════════════════════ */
+  #footer {
+    border-top: 1px solid #1A1A1A;
+    padding: 36px 2.5vw 44px;
+  }
+
+  .footer-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding-bottom: 32px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid #0F0F0F;
+  }
+
+  .footer-logo {
+    height: 30px;
+    opacity: 1;
+    mix-blend-mode: screen;
+  }
+
+  .footer-nav {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+  .footer-nav a {
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #444;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .footer-nav a:hover { color: #B0B0B0; }
+
+  .footer-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .footer-copy {
+    font-size: 9px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: #666;
+  }
+
+  .footer-tag {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════
+     CTA SECTION
+═══════════════════════════ -->
+<section id="cta">
+
+  <p class="cta-label reveal">Contact</p>
+
+  <h2 class="cta-headline reveal" style="transition-delay:0.07s">
+    Let's Start<br>A Conversation.
+  </h2>
+
+  <form id="ctaForm" novalidate>
+
+    <!-- Sentence-style fields -->
+    <div class="form-sentence reveal" style="transition-delay:0.14s">
+      <div class="form-line">
+        <span class="form-prose">My name is</span>
+        <input type="text"  name="name"  class="form-inline f-name"
+               placeholder="your name" aria-label="Name" required>
+        <span class="form-prose">, and I represent</span>
+        <input type="text"  name="org"   class="form-inline f-org"
+               placeholder="your organization" aria-label="Organization">
+        <span class="form-prose">.</span>
+      </div>
+      <div class="form-line">
+        <span class="form-prose">Reach me at</span>
+        <input type="email" name="email" class="form-inline f-email"
+               placeholder="your email address" aria-label="Email" required>
+        <span class="form-prose">.</span>
+      </div>
+    </div>
+
+    <div class="form-sep reveal" style="transition-delay:0.20s"></div>
+
+    <!-- Inquiry type -->
+    <div class="reveal" style="transition-delay:0.26s">
+      <p class="inquiry-label">I'm interested in discussing</p>
+      <div class="inquiry-pills">
+        <button type="button" class="inquiry-pill" data-value="Partnership">Partnership</button>
+        <button type="button" class="inquiry-pill" data-value="Government">Government</button>
+        <button type="button" class="inquiry-pill" data-value="Enterprise">Enterprise</button>
+        <button type="button" class="inquiry-pill" data-value="Investor">Investor</button>
+        <button type="button" class="inquiry-pill" data-value="Career">Career</button>
+        <button type="button" class="inquiry-pill" data-value="General">General</button>
+      </div>
+    </div>
+
+    <!-- Message -->
+    <div class="reveal" style="transition-delay:0.32s">
+      <p class="message-label">Message</p>
+      <textarea name="message" class="form-textarea"
+                placeholder="What's on your mind?" rows="5"></textarea>
+    </div>
+
+    <!-- Submit -->
+    <div class="form-footer reveal" style="transition-delay:0.38s">
+      <p class="form-note">We typically respond within one business day.</p>
+      <button type="submit" class="form-submit" id="submitBtn">
+        <span class="submit-text">Start the conversation</span>
+        <span class="submit-arrow">→</span>
+      </button>
+    </div>
+
+  </form>
+
+</section>
+
+<!-- ═══════════════════════════
+     FOOTER
+═══════════════════════════ -->
+<footer id="footer">
+  <div class="footer-top">
+    <img src="Logo/Logo-Final.png" alt="cogniti" class="footer-logo">
+    <nav>
+      <ul class="footer-nav">
+        <li><a href="#">Founder</a></li>
+        <li><a href="#">Deployments</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#cta">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">© 2026 Cognitiva Solusi Indonesia. All rights reserved.</p>
+    <p class="footer-tag">Intelligence Infrastructure</p>
+  </div>
+</footer>
+
+<script>
+  /* ── Pill selection ── */
+  let selectedInquiry = '';
+  document.querySelectorAll('.inquiry-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.inquiry-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      selectedInquiry = pill.dataset.value;
+    });
+  });
+
+  /* ── Submit → mailto ── */
+  const form    = document.getElementById('ctaForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const submitTxt = submitBtn.querySelector('.submit-text');
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const name    = form.querySelector('[name="name"]').value.trim();
+    const org     = form.querySelector('[name="org"]').value.trim();
+    const email   = form.querySelector('[name="email"]').value.trim();
+    const message = form.querySelector('[name="message"]').value.trim();
+    const inquiry = selectedInquiry || 'General';
+
+    if (!name) { form.querySelector('[name="name"]').focus(); return; }
+    if (!email) { form.querySelector('[name="email"]').focus(); return; }
+
+    const subject = encodeURIComponent(
+      `${inquiry} Inquiry — ${name}${org ? ' · ' + org : ''}`
+    );
+    const body = encodeURIComponent([
+      `Name: ${name}`,
+      `Organization: ${org || '—'}`,
+      `Email: ${email}`,
+      `Inquiry Type: ${inquiry}`,
+      ``,
+      message
+    ].join('\n'));
+
+    submitBtn.classList.add('sending');
+    submitTxt.textContent = 'Opening mail client…';
+
+    setTimeout(() => {
+      window.location.href = `mailto:info@cogniti.id?subject=${subject}&body=${body}`;
+      setTimeout(() => {
+        submitBtn.classList.remove('sending');
+        submitTxt.textContent = 'Start the conversation';
+      }, 2500);
+    }, 280);
+  });
+
+  /* ── Entry animations ── */
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
