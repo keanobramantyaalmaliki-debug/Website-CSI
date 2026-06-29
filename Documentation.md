@@ -66,16 +66,16 @@ Feel referensi: Linear, Vercel.
 |---|---|---|---|
 | 1 | **Hero** | `#hero` | Curiosity — WebGL sphere full-screen |
 | 2 | **Manifesto** | `#manifesto` | Worldview building — word-by-word reveal |
-| 3 | **Founder** | `#founder` | Otoritas personal — Fami Maliki |
-| 4 | **Selected Deployments** | `#deployments` | Implied authority — arc-spine |
-| 5 | **Living Architecture** | `#living-arch` | Interactive 3D simulation — centerpiece |
-| 6 | **Careers** | `#careers` | Talent acquisition |
-| 7 | **CTA / Contact** | `#cta` | Dorongan konversi |
-| 8 | **Footer** | `#footer` | — |
+| 3 | **Selected Deployments** | `#deployments` | Implied authority — arc-spine |
+| 4 | **Living Architecture** | `#living-arch` | Interactive 3D simulation — centerpiece |
+| 5 | **Careers** | `#careers` | Talent acquisition |
+| 6 | **CTA / Contact** | `#cta` | Dorongan konversi |
+| 7 | **Footer** | `#footer` | — |
 
 > Minimal project, klien, dan produk — credibility dibangun lewat cara berpikir dan siapa di baliknya, bukan portfolio. Pendekatan McKinsey/Stripe.
 > Loading Screen ditunda, bukan bagian dari MVP 1 awal.
 > "Who We Serve" section dihapus — digantikan Living Architecture.
+> **Founder section dihapus (2026-06-29)** atas permintaan atasan. Semua kode (CSS + HTML + JS hover & achievement overlay) di-backup ke `Backup-Founder-Section.md` untuk re-integrasi sewaktu-waktu. Kandidat pengganti slot lama: "Industries We Serve" (lihat `Revisi.md`) — belum diputuskan.
 
 ---
 
@@ -121,55 +121,19 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 ---
 
-## Section 3 — Founder ✅ Implemented
+## Founder ❌ Removed (2026-06-29)
 
-**Layout:**
-- Kiri: card — thumbnail foto + "Fami Maliki" + "FOUNDER & CEO"
-- Kanan: deskripsi pencapaian (36px) + metadata bar
-- Divider `1px #1A1A1A`, padding `88px 0`
+Founder section dihapus dari `index.html` atas permintaan atasan (revisi PDF: "slide founder di akhir aja" → lalu diputuskan dihapus seluruhnya).
 
-**Interaksi:**
-- Hover `.item-desc` → floating founder photo mengikuti cursor (kanan cursor, 20px offset)
-- Pop-in: scale `0.05→1`, spring easing `cubic-bezier(0.34, 1.56, 0.64, 1)`, **1.1s** (diperlambat dari 0.7s biar pop-up lebih kalem/anggun)
-- Hiding tetap snappy `0.2s` ease (biar ganti baris cepat)
-- Momentum tilt: `velocityX * 0.4`
-- Text scramble 420ms saat hover
-- Cursor `+` crosshair saat hover (custom cursor, bukan native)
-- Custom cursor muncul di item-level hover, bukan hanya desc-level
+**Yang dihapus:** CSS blok Founder + achievement overlay + mobile override; HTML `<section id="founder">`, `#ach-overlay`, `#custom-cursor`, `#floating-wrapper`; 2 IIFE JS (founder hover floating-photo/scramble + achievement detail overlay IGLOO-style).
 
-**Foto founder ✅ ditambahkan:**
-- Folder `Photo-Founder-section/`
-- Thumbnail card → `Photo profile.jpg` (`.thumb img` object-position `center 22%` biar wajah ke-frame)
-- Floating photo per item (`data-photo`): item 1 → `Foto Award.jpeg`, item 2 → `Foto Speaking.jpg`
+**Backup penuh:** `Backup-Founder-Section.md` — semua potongan kode + posisi lama + urutan re-integrasi. Foto di `Photo-Founder-section/` belum dihapus (masih dipakai sebagai OG/Twitter share image di `<head>`).
 
-**Konten pending:**
-- Konten pencapaian nyata (teks masih placeholder — dikonfirmasi ke founder)
-
-**Achievement detail overlay ✅ (2026-06-29):**
-- Klik `.achievement-item` → full-screen overlay `#ach-overlay` gaya terminal IGLOO (bukan halaman/URL terpisah — overlay in-page biar tidak reload intro WebGL).
-- Style: monospace (system stack, no extra font), bg `rgba(8,8,8,0.86)` + blur → ambient trail tetap kelihatan di belakang. Label `/////// Summary`, `/// Details`, `/// Discover`.
-- Data di JS array `ACH[]` (index = urutan markup item). Summary masih **lorem ipsum placeholder** — ganti saat copy founder final. Link `[X] [LinkedIn] [website]` masih `#`.
-- Buka/tutup: klik item / Close / Escape / klik backdrop. Browser Back juga nutup (`history.pushState` + `popstate`).
-- Handler didaftarkan di **luar** IIFE hover (yang ada `if(IS_TOUCH)return`) → klik jalan di mouse & touch; efek hover (floating photo/scramble) tetap mouse-only.
-
-**Hover effect overlay — spatial scramble + glow trail ✅ (referensi IGLOO):**
-- Direferensikan dari recording IGLOO (`References/frames`, 265 frame). Efek aslinya **bukan** spotlight/glow bulat, tapi **text-scramble spasial yang mengikuti cursor dan meninggalkan jejak yang meluruh perlahan**.
-- Tiap karakter di-wrap `<span class="zc" data-ch="…">` (huruf asli disimpan di `data-ch` agar tahan re-cache saat scroll/resize). Spasi & tanda baca tidak ikut scramble.
-- **Engine (rAF loop):** tiap char punya nilai `dist` (0–1).
-  - **Ignite:** char dalam `RADIUS` dari cursor di-charge ke titik paling terang (`if(hit>c.dist)c.dist=hit`) — hanya saat cursor **bergerak**.
-  - **Scramble lokal & per-huruf:** `active = moving && d2<R2` → huruf hanya menampilkan karakter acak (re-random tiap frame) bila cursor yang bergerak benar-benar menyentuhnya. Di luar itu tampil glyph asli.
-  - **Trail:** `dist *= DECAY` tiap frame, **independen** dari posisi/gerak cursor → glow memudar mulus sampai `THRESH` baru settle.
-  - **Brightness:** interpolasi dari warna resting char (`getComputedStyle`, disimpan `c.base`) → putih, ramp `k=min(1,t*1.6)`. Mulai dari `base` persis → tidak ada lompatan warna saat settle. Glow = dua-layer text-shadow (inti 6px + halo 16px).
-- **Knob:** `RADIUS=64` (lebar sentuhan), `DECAY=0.98` (panjang jejak), `THRESH=0.012` (kapan settle), `SCRAMBLE` (charset acak: huruf+angka+simbol).
-- **Bug yang sempat terjadi & di-fix (untuk konteks):**
-  1. Edge-trigger ignite (`!c.in`) → char di-charge di batas radius (paling redup) → glow tak pernah terbangun. Fix: max-hit charge selama moving.
-  2. `reset()` di cabang `!moving` menghapus scramble **dan** glow sekaligus → trail mati mendadak. Fix: decay+render selalu jalan, hanya pemilihan glyph yang digerbang.
-  3. Gerbang scramble pakai flag `moving` **global** → huruf ekor trail ikut berkedip mengikuti gerak cursor global (scramble aktif walau cursor di ruang kosong; berhenti serentak saat cursor diam). Fix: gerbang **per-huruf lokal** (`active = moving && near`).
-- Mouse-only (efek butuh `mousemove`); touch tetap bisa buka/baca overlay.
+**Kandidat pengganti slot lama (Careers → CTA):** "Industries We Serve" (13 sektor, dari `Revisi.md`) — belum diputuskan; ada pertimbangan tumpang tindih dengan Deployments.
 
 ---
 
-## Section 4 — Selected Deployments ✅ Implemented
+## Section 3 — Selected Deployments ✅ Implemented
 
 **Konsep:** Implied authority — coverage sektor tanpa nama klien. Pola McKinsey/Deloitte.
 
@@ -189,7 +153,7 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 ---
 
-## Section 5 — Living Architecture ✅ Implemented
+## Section 4 — Living Architecture ✅ Implemented
 
 **Konsep:** Interactive 3D network simulation — centerpiece website. Menjelaskan kemampuan Cogniti tanpa membuka IP produk.
 
@@ -255,7 +219,7 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 ---
 
-## Section 6 — Careers ✅ Implemented
+## Section 5 — Careers ✅ Implemented
 
 **Headline:** Build What Comes Next.
 
@@ -282,7 +246,7 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 ---
 
-## Section 7 — CTA / Contact ✅ Implemented
+## Section 6 — CTA / Contact ✅ Implemented
 
 **Headline:** Let's Start A Conversation.
 
@@ -295,7 +259,7 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 ---
 
-## Section 8 — Footer ✅ Implemented
+## Section 7 — Footer ✅ Implemented
 
 - Logo + nav links (Deployments · Careers · Contact) — "Founder" dihapus saat finalize
 - © 2026 Cognitiva Solusi Indonesia · "Intelligence Infrastructure"
@@ -334,7 +298,7 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 - 20 rantai node, tiap trail 60 node, spring physics
 - `lighter` blend mode, warna `hsla(210–230, 10%, 95%, 0.035)`
 - `position: fixed`, `z-index: 11`, `pointer-events: none`
-- Visible di semua section termasuk manifesto dan founder
+- Visible di semua section termasuk manifesto
 
 ---
 
