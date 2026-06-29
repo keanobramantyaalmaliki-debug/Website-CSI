@@ -1,4 +1,4 @@
-# Plan — cogniti Landing Page MVP 1
+# Documentation — cogniti Landing Page MVP 1
 
 ---
 
@@ -18,8 +18,9 @@ Setiap keputusan desain dan konten harus berkontribusi ke salah satu dari tiga t
 | **Legal** | Cognitiva Solusi Indonesia |
 | **Positioning** | Intelligence Infrastructure Company |
 | **Typography** | Inter |
-| **Logo (dark bg)** | `asset/Logo-Final.png` (gray) |
-| **Logo (light bg)** | `asset/Logo-Final 2.png` (navy) |
+| **Logo (dark bg)** | `Logo/Logo-Final.png` (gray) — satu-satunya logo dipakai |
+
+> `Logo-Final 2.png` (navy, light-bg) dihapus saat finalize — tidak pernah direferensikan (site full dark).
 
 ---
 
@@ -129,15 +130,42 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 **Interaksi:**
 - Hover `.item-desc` → floating founder photo mengikuti cursor (kanan cursor, 20px offset)
-- Pop-in: scale `0.05→1`, spring easing `cubic-bezier(0.34, 1.56, 0.64, 1)`, 0.7s
+- Pop-in: scale `0.05→1`, spring easing `cubic-bezier(0.34, 1.56, 0.64, 1)`, **1.1s** (diperlambat dari 0.7s biar pop-up lebih kalem)
+- Hiding tetap snappy 0.2s ease (biar ganti baris cepat)
 - Momentum tilt: `velocityX * 0.4`
 - Text scramble 420ms saat hover
 - Cursor `+` crosshair saat hover (custom cursor, bukan native)
 - Custom cursor muncul di item-level hover, bukan hanya desc-level
 
+**Foto founder ✅ ditambahkan:**
+- Folder `Photo-Founder-section/`
+- Thumbnail card → `Photo profile.jpg` (`.thumb img` object-position `center 22%` biar wajah ke-frame)
+- Floating photo per item (`data-photo`): item 1 → `Foto Award.jpeg`, item 2 → `Foto Speaking.jpg`
+
 **Konten pending:**
-- Foto founder (placeholder `fp-placeholder`)
-- Konten pencapaian nyata (saat ini placeholder)
+- Konten pencapaian nyata (teks masih placeholder — dikonfirmasi ke founder)
+
+**Achievement detail overlay ✅ (2026-06-29):**
+- Klik `.achievement-item` → full-screen overlay `#ach-overlay` gaya terminal IGLOO (bukan halaman/URL terpisah — overlay in-page biar tidak reload intro WebGL).
+- Style: monospace (system stack, no extra font), bg `rgba(8,8,8,0.86)` + blur → ambient trail tetap kelihatan di belakang. Label `/////// Summary`, `/// Details`, `/// Discover`.
+- Data di JS array `ACH[]` (index = urutan markup item). Summary masih **lorem ipsum placeholder** — ganti saat copy founder final. Link `[X] [LinkedIn] [website]` masih `#`.
+- Buka/tutup: klik item / Close / Escape / klik backdrop. Browser Back juga nutup (`history.pushState` + `popstate`).
+- Handler didaftarkan di **luar** IIFE hover (yang ada `if(IS_TOUCH)return`) → klik jalan di mouse & touch; efek hover (floating photo/scramble) tetap mouse-only.
+
+**Hover effect overlay — spatial scramble + glow trail ✅ (referensi IGLOO):**
+- Direferensikan dari recording IGLOO (`References/frames`, 265 frame). Efek aslinya **bukan** spotlight/glow bulat, tapi **text-scramble spasial yang mengikuti cursor dan meninggalkan jejak yang meluruh perlahan**.
+- Tiap karakter di-wrap `<span class="zc" data-ch="…">` (huruf asli disimpan di `data-ch` agar tahan re-cache saat scroll/resize). Spasi & tanda baca tidak ikut scramble.
+- **Engine (rAF loop):** tiap char punya nilai `dist` (0–1).
+  - **Ignite:** char dalam `RADIUS` dari cursor di-charge ke titik paling terang (`if(hit>c.dist)c.dist=hit`) — hanya saat cursor **bergerak**.
+  - **Scramble lokal & per-huruf:** `active = moving && d2<R2` → huruf hanya menampilkan karakter acak (re-random tiap frame) bila cursor yang bergerak benar-benar menyentuhnya. Di luar itu tampil glyph asli.
+  - **Trail:** `dist *= DECAY` tiap frame, **independen** dari posisi/gerak cursor → glow memudar mulus sampai `THRESH` baru settle.
+  - **Brightness:** interpolasi dari warna resting char (`getComputedStyle`, disimpan `c.base`) → putih, ramp `k=min(1,t*1.6)`. Mulai dari `base` persis → tidak ada lompatan warna saat settle. Glow = dua-layer text-shadow (inti 6px + halo 16px).
+- **Knob:** `RADIUS=64` (lebar sentuhan), `DECAY=0.98` (panjang jejak), `THRESH=0.012` (kapan settle), `SCRAMBLE` (charset acak: huruf+angka+simbol).
+- **Bug yang sempat terjadi & di-fix (untuk konteks):**
+  1. Edge-trigger ignite (`!c.in`) → char di-charge di batas radius (paling redup) → glow tak pernah terbangun. Fix: max-hit charge selama moving.
+  2. `reset()` di cabang `!moving` menghapus scramble **dan** glow sekaligus → trail mati mendadak. Fix: decay+render selalu jalan, hanya pemilihan glyph yang digerbang.
+  3. Gerbang scramble pakai flag `moving` **global** → huruf ekor trail ikut berkedip mengikuti gerak cursor global (scramble aktif walau cursor di ruang kosong; berhenti serentak saat cursor diam). Fix: gerbang **per-huruf lokal** (`active = moving && near`).
+- Mouse-only (efek butuh `mousemove`); touch tetap bisa buka/baca overlay.
 
 ---
 
@@ -150,6 +178,8 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 **Interaksi:** GSAP ScrollTrigger scrub, section di-pin `5 × 100vh`.
 
 **Sectors:** Public Services · Infrastructure · Logistics · Hospitality · Communities
+
+**Arc bleed ✅:** Span visual arc (`DVISHALF`, DVH*0.62) dipisah dari span item/tick (`DHALF`, DVH*0.46) — garis arc + guide (inner/outer) memanjang lewat tepi atas/bawah viewport biar tidak keliatan terpotong, tapi titik sektor & tick tetap dalam area aman.
 
 **Rules:** No client logo, no project name, no screenshots, no pricing.
 
@@ -237,7 +267,12 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 *Read (click):* Accordion expand, role lain `opacity: 0.2`.
 
-**Catatan:** Preview images masih gradient placeholder — ganti dengan foto editorial.
+**Preview images ✅ ditambahkan:**
+- Folder `Photo-careers-section/`, dipasang via `background-image` di `.preview-inner` (cover/center)
+- Mapping per role: `innovation & growth manager.jpg`, `technical lead.jpg`, `product builder.jpg`, `fullstack engineer.jpg`
+- Overlay gelap `rgba(10,10,10,0.32)` (`::after`) biar tetap restrained, `◉` placeholder dihapus
+
+**Catatan:** Metadata role (Full-time · Remote/Hybrid · divisi) masih asumsi — perlu dikonfirmasi.
 
 ---
 
@@ -256,8 +291,9 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 ## Section 8 — Footer ✅ Implemented
 
-- Logo + nav links (Founder · Deployments · Careers · Contact)
+- Logo + nav links (Deployments · Careers · Contact) — "Founder" dihapus saat finalize
 - © 2026 Cognitiva Solusi Indonesia · "Intelligence Infrastructure"
+- Logo nav-brand smooth-scroll ke top (bukan `href="#"` mati)
 
 ---
 
@@ -308,8 +344,38 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 ---
 
+## Finalize — Pre-Launch Hardening ✅ (2026-06-29)
+
+Audit kritikal sebelum finalize, lalu di-fix:
+
+**#1 — Blank-page failsafe** (`<head>`, setelah CDN scripts)
+`<main>` disembunyikan via `page-loading` sampai user scroll pertama → `playEntry()`. Risiko: kalau CDN (GSAP/Three.js) gagal load, intro tidak pernah jalan & halaman blank selamanya. Fix: guard sinkron — kalau `gsap`/`THREE` undefined (CDN script render-blocking, jadi pasti sudah resolve di titik ini), langsung remove `page-loading`.
+> ⚠️ JANGAN tambah timeout auto-reveal: sphere full-screen memang idle nunggu scroll user (bisa >3.5s). Timeout malah reveal `main` saat `#hero` masih `opacity:0` & sphere belum collapse → half-broken state. Versi awal sempat pakai timeout 3.5s, di-revert.
+
+**#2 — SEO & social metadata** (`<head>`, 13 tag)
+Sebelumnya nol. Ditambah: meta description, canonical, favicon (`Logo/Logo-Final.png`) + apple-touch-icon, theme-color, Open Graph (title/desc/url/image), Twitter Card. OG/Twitter image → `Foto Speaking.jpg`.
+> URL absolut pakai `https://cogniti.id/` — ganti kalau domain produksi beda (crawler butuh URL absolut buat fetch preview image).
+
+**#3 — Favicon** — sebelumnya 404, sekarang pakai logo.
+
+**#5 — Asset hygiene**
+- `loading="lazy"` di 3 img below-the-fold (2 founder thumb + footer logo); 3 navbar logo tetap eager (LCP).
+- `Logo-Final 2.png` (unused, 45KB) dihapus via `git rm`.
+
+**#6 — Dead links** (`href="#"`)
+- Footer "Founder" dihapus.
+- Social (menu overlay): Instagram → `instagram.com/baliinteraktifperkasa`, LinkedIn → `linkedin.com/company/bali-interaktif-perkasa`, X **diganti Facebook** → `facebook.com/p/Bali-Interaktif-Perkasa-...`. Semua `target="_blank" rel="noopener noreferrer"`.
+- 3 logo nav-brand → click handler smooth-scroll ke top (no stray `#`).
+
+**Belum dikerjakan (#4):** file non-produksi masih ter-track git (`*-demo.html`, `*.md`, dll) — publicly reachable kalau seluruh repo di-deploy. Perlu di-exclude/hapus sebelum deploy.
+
+---
+
 ## Pending / To Do
 
-- [ ] Foto founder (ganti `fp-placeholder` dengan foto editorial Fami Maliki)
-- [ ] Konten pencapaian founder yang nyata (3 item — dikonfirmasi ke founder)
-- [ ] Preview images Careers (ganti gradient placeholder dengan foto editorial)
+- [x] Foto founder — thumbnail `Photo profile.jpg` + floating `Foto Award.jpeg` / `Foto Speaking.jpg`
+- [x] Preview images Careers — foto editorial per role (`Photo-careers-section/`)
+- [x] Arc Deployments bleed ke tepi atas/bawah (`DVISHALF` vs `DHALF`)
+- [ ] Konten pencapaian founder yang nyata (teks masih placeholder — dikonfirmasi ke founder)
+- [ ] Konfirmasi metadata role Careers (work-arrangement & divisi masih asumsi)
+- [ ] Navbar blur/scrim saat scroll lewat hero (ditunda — "nanti aja")
