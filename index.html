@@ -55,6 +55,14 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
   position: fixed; top: 0; left: 0; right: 0; z-index: 30;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 var(--pad); height: 64px; pointer-events: none;
+  border-bottom: 1px solid transparent;
+  transition: background 0.4s ease, backdrop-filter 0.4s ease, border-color 0.4s ease;
+}
+/* frosted bar: tint + blur fade in once scrolled past the hero (transparan di hero) */
+#navbar-minimal.has-bg, #navbar.has-bg {
+  background: rgba(10,10,10,0.55);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom-color: #1A1A1A;
 }
 #navbar-minimal { opacity: 1; pointer-events: auto; }
 #navbar { opacity: 0; }
@@ -330,32 +338,32 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1); }
 .reveal.visible { opacity: 1; transform: none; }
 #cta { padding: 140px 2.5vw 120px; border-top: 1px solid #262626; text-align: center; position: relative; z-index: 1; }
-.cta-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: #888; margin-bottom: 32px; }
+.cta-label { font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #888; margin-bottom: 32px; }
 .cta-headline { font-size: clamp(52px, 6.5vw, 100px); font-weight: 300; letter-spacing: -0.03em; line-height: 1.04; color: #F0F0F0; margin-bottom: 80px; }
-.form-sentence { display: flex; flex-direction: column; gap: 2px; margin-bottom: 56px; align-items: center; }
+.form-sentence { display: flex; flex-direction: column; gap: 2px; align-items: center; }
 .form-line { display: flex; align-items: baseline; flex-wrap: wrap; justify-content: center; gap: 0; line-height: 2.6; }
-.form-prose { font-size: 15px; font-weight: 300; color: #888; white-space: nowrap; padding: 0 8px; }
+.form-prose { font-size: 16.5px; font-weight: 300; color: #888; white-space: nowrap; padding: 0 8px; }
 .form-prose:first-child { padding-left: 0; }
-.form-inline { background: transparent; border: none; border-bottom: 1px solid #444; color: #C8C8C8; font-size: 15px; font-weight: 300; font-family: inherit; letter-spacing: -0.01em; padding: 3px 2px 5px; min-width: 160px; width: auto; outline: none; transition: border-color 0.3s ease, color 0.3s ease; }
+.form-inline { background: transparent; border: none; border-bottom: 1px solid #444; color: #C8C8C8; font-size: 16.5px; font-weight: 300; font-family: inherit; letter-spacing: -0.01em; padding: 3px 2px 5px; min-width: 160px; width: auto; outline: none; transition: border-color 0.3s ease, color 0.3s ease; }
 .form-inline::placeholder { color: #666; }
 .form-inline:focus { border-bottom-color: #777; color: #F0F0F0; }
 .form-inline:focus::placeholder { color: #888; }
 .form-inline.f-name  { min-width: 180px; }
 .form-inline.f-org   { min-width: 200px; }
 .form-inline.f-email { min-width: 240px; }
-.form-sep { width: 100%; height: 1px; background: #262626; margin: 40px 0; }
-.inquiry-label { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #888; margin-bottom: 18px; }
-.inquiry-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 52px; }
-.inquiry-pill { background: transparent; border: 1px solid #444; color: #888; font-size: 9px; font-family: inherit; font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase; padding: 8px 16px; cursor: pointer; transition: border-color 0.22s ease, color 0.22s ease, background 0.22s ease; }
+.form-sep { width: 100%; max-width: 680px; height: 1px; background: #262626; margin: 56px auto; }
+.inquiry-label { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #888; margin-bottom: 20px; }
+.inquiry-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 56px; }
+.inquiry-pill { background: transparent; border: 1px solid #444; color: #888; font-size: 10.5px; font-family: inherit; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; padding: 9px 18px; cursor: pointer; transition: border-color 0.22s ease, color 0.22s ease, background 0.22s ease; }
 .inquiry-pill:hover  { border-color: #666; color: #B0B0B0; }
 .inquiry-pill.active { border-color: #F0F0F0; color: #0A0A0A; background: #F0F0F0; }
-.message-label { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #888; margin-bottom: 14px; }
-.textarea-wrap { position: relative; width: 100%; max-width: 680px; margin: 0 auto 52px; }
-.form-textarea { width: 100%; background: transparent; border: 1px solid #444; color: #C8C8C8; font-size: 14px; font-weight: 300; font-family: inherit; letter-spacing: 0.01em; line-height: 1.8; padding: 16px 20px 56px; resize: vertical; min-height: 136px; outline: none; transition: border-color 0.3s ease; display: block; text-align: left; }
+.message-label { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #888; margin-bottom: 16px; }
+.textarea-wrap { position: relative; width: 100%; max-width: 680px; margin: 0 auto 40px; }
+.form-textarea { width: 100%; background: transparent; border: 1px solid #444; color: #C8C8C8; font-size: 15px; font-weight: 300; font-family: inherit; letter-spacing: 0.01em; line-height: 1.8; padding: 18px 22px 58px; resize: vertical; min-height: 144px; outline: none; transition: border-color 0.3s ease; display: block; text-align: left; }
 .form-textarea::placeholder { color: #666; }
 .form-textarea:focus { border-color: #666; }
 .form-footer { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-.form-note { font-size: 10px; letter-spacing: 0.06em; color: #777; }
+.form-note { font-size: 11.5px; letter-spacing: 0.06em; color: #777; }
 .form-submit { position: absolute; bottom: 14px; right: 14px; background: #F0F0F0; border: none; border-radius: 100px; cursor: pointer; display: flex; align-items: center; gap: 7px; color: #0A0A0A; font-size: 10px; font-family: inherit; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; padding: 9px 18px; transition: background 0.2s ease; }
 .form-submit:hover { background: #fff; }
 .form-submit:hover .submit-arrow { transform: translateX(3px); }
@@ -1175,6 +1183,16 @@ if (_heroCta) _heroCta.addEventListener('click', onFirstScroll);
 function setupScrollAnimations() {
 
   gsap.to('#hero',{opacity:0,scrollTrigger:{trigger:'#manifesto',start:'top 85%',end:'top 30%',scrub:1}});
+
+  /* Navbar frosted background — transparan di hero, tint+blur muncul saat masuk manifesto */
+  ScrollTrigger.create({
+    trigger:'#manifesto', start:'top 75%',
+    onToggle:self=>{
+      const on=self.isActive||self.progress>0;
+      document.getElementById('navbar').classList.toggle('has-bg',on);
+      document.getElementById('navbar-minimal').classList.toggle('has-bg',on);
+    }
+  });
 
   /* Manifesto */
   const COPY=[
