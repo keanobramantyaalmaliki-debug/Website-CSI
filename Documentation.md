@@ -130,8 +130,8 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 
 **Interaksi:**
 - Hover `.item-desc` → floating founder photo mengikuti cursor (kanan cursor, 20px offset)
-- Pop-in: scale `0.05→1`, spring easing `cubic-bezier(0.34, 1.56, 0.64, 1)`, **1.1s** (diperlambat dari 0.7s biar pop-up lebih kalem)
-- Hiding tetap snappy 0.2s ease (biar ganti baris cepat)
+- Pop-in: scale `0.05→1`, spring easing `cubic-bezier(0.34, 1.56, 0.64, 1)`, **1.1s** (diperlambat dari 0.7s biar pop-up lebih kalem/anggun)
+- Hiding tetap snappy `0.2s` ease (biar ganti baris cepat)
 - Momentum tilt: `velocityX * 0.4`
 - Text scramble 420ms saat hover
 - Cursor `+` crosshair saat hover (custom cursor, bukan native)
@@ -174,6 +174,10 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 **Konsep:** Implied authority — coverage sektor tanpa nama klien. Pola McKinsey/Deloitte.
 
 **Visual:** Arc-spine — lingkaran besar (center di luar viewport kiri), 5 sector sebagai titik di kurva. Teks dirotasi mengikuti tangen kurva.
+
+**Enrichment (✅):** Guide-arc (dua, di `DR-20` & `DR+26`) + tick-marks perpendikular (minor sepanjang span, major di slot sektor). Stroke redup monokrom (`arc-path` 0.085, `arc-guide` 0.05, tick 0.10 / major 0.20). Progress dots dihapus (tidak perlu). Label aktif: `01 — Public Services` dst, transisi fade.
+
+**Arc bleed (✅):** Rentang visual dipisah dari spacing item. `DHALF` (`asin(DVH*0.46/DR)`) tetap untuk posisi sektor + tick, tapi arc-path + dua guide pakai `DVISHALF` (`asin(DVH*0.62/DR)`) sehingga garis lengkung menembus tepi atas-bawah viewport (~12% bleed tiap sisi) dan tidak terlihat terpotong di tengah layar.
 
 **Interaksi:** GSAP ScrollTrigger scrub, section di-pin `5 × 100vh`.
 
@@ -261,6 +265,8 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 - Product Builder
 - Full Stack Engineer
 
+**Enrichment editorial (✅):** Tiap role-item kini punya index `01–04`, metadata per baris (`Full-time · Remote · Growth` dst — work-arrangement masih asumsi, perlu konfirmasi), dan hover diperkuat (judul geser `translateX(12px)`, fill gradient redup, index/meta/panah menyala). "What you bring" label + tag diperbesar/diterangkan, tag punya hover-to-brighten. Padding role-header & body-inner pakai `clamp(10px,1.4vw,26px)` agar panah tidak terpotong oleh `overflow:hidden`.
+
 **Interaksi — dua layer:**
 
 *Scan (hover):* Preview image di posisi cursor, curtain reveal/close animation.
@@ -268,7 +274,7 @@ IcosahedronGeometry (detail 5) dengan tiga layer:
 *Read (click):* Accordion expand, role lain `opacity: 0.2`.
 
 **Preview images ✅ ditambahkan:**
-- Folder `Photo-careers-section/`, dipasang via `background-image` di `.preview-inner` (cover/center)
+- Folder `Photo-careers-section/`, dipasang via `background-image` pada `.preview-N .preview-inner` (`cover`/center)
 - Mapping per role: `innovation & growth manager.jpg`, `technical lead.jpg`, `product builder.jpg`, `fullstack engineer.jpg`
 - Overlay gelap `rgba(10,10,10,0.32)` (`::after`) biar tetap restrained, `◉` placeholder dihapus
 
@@ -374,8 +380,8 @@ Sebelumnya nol. Ditambah: meta description, canonical, favicon (`Logo/Logo-Final
 ## Pending / To Do
 
 - [x] Foto founder — thumbnail `Photo profile.jpg` + floating `Foto Award.jpeg` / `Foto Speaking.jpg`
-- [x] Preview images Careers — foto editorial per role (`Photo-careers-section/`)
+- [x] Preview images Careers — foto editorial per role (`Photo-careers-section/`: 4 role)
 - [x] Arc Deployments bleed ke tepi atas/bawah (`DVISHALF` vs `DHALF`)
 - [ ] Konten pencapaian founder yang nyata (teks masih placeholder — dikonfirmasi ke founder)
-- [ ] Konfirmasi metadata role Careers (work-arrangement & divisi masih asumsi)
+- [ ] Konfirmasi metadata role Careers (work-arrangement `Full-time/Remote/Hybrid` + divisi masih asumsi)
 - [ ] Navbar blur/scrim saat scroll lewat hero (ditunda — "nanti aja")
