@@ -46,7 +46,7 @@ Implikasi struktur: muncul beberapa section baru (Our Services, Why Choose Cogni
 - Paragraf pendamping:
   > Cogniti is a technology company specializing in custom software development, digital transformation, and Artificial Intelligence solutions. We partner with businesses, startups, enterprises, and public institutions to design and develop innovative software that solves real-world challenges.
 
-### Our Services (section baru) ⏳ ❓
+### Our Services (section baru) ✅
 Daftar layanan (judul + deskripsi):
 1. **Custom Software Development** — Tailor-made software designed around your unique business processes, helping you improve productivity, streamline operations, and support long-term growth.
 2. **Web Application Development** — Modern, responsive, and secure web applications built with performance, scalability, and user experience in mind.
@@ -59,7 +59,7 @@ Daftar layanan (judul + deskripsi):
 8. **Cloud & DevOps** — Deploy, monitor, and optimize applications with modern cloud infrastructure and DevOps best practices for maximum reliability and scalability. *(hal. 3)*
 9. **Maintenance & Technical Support** — Ensure your applications remain secure, updated, and optimized with continuous support and proactive maintenance. *(hal. 3)*
 
-> ❓ Ini bertentangan dengan keputusan desain lama "tidak ada daftar layanan". Perlu putuskan: section baru murni, atau dilebur ke section existing? Layout (grid kartu?) juga perlu dibahas.
+> ✅ Diputuskan: dibuat section baru murni `#services` (setelah Deployments, sebelum Living Architecture). Layout = **3D conveyor / rotating bookshelf** (CSS 3D `preserve-3d` + drag, bukan grid kartu statis). Front face = nomor + judul; tap kartu yang di tengah → flip 180° menampilkan deskripsi di belakang (no-redundancy). Kartu #4 (AI) flip ke 5 sub-item. Mobile: 3D di-skip, ganti list bertumpuk yang legible.
 
 ---
 
@@ -95,7 +95,7 @@ Daftar layanan (judul + deskripsi):
 
 ---
 
-## Halaman 6 — Our Development Process (section baru) ⏳
+## Halaman 6 — Our Development Process (section baru) ✅
 
 "tambahkan 1 page lagi" — proses kerja 6 langkah:
 1. **Discovery** — Understanding your business, objectives, and technical requirements.
@@ -103,9 +103,10 @@ Daftar layanan (judul + deskripsi):
 3. **Design** — Creating intuitive UI/UX experiences that maximize usability and engagement.
 4. **Development** — Building scalable, secure, and high-performance software using modern technologies.
 5. **Testing & Quality Assurance** — Conducting comprehensive testing to ensure functionality, security, performance, and reliability.
-6. **Deployment & Continuous Support** *(deskripsi tidak tercantum di PDF — perlu dilengkapi)*
+6. **Deployment & Continuous Support** — Launching your product, then providing ongoing monitoring, maintenance, and continuous improvement. *(deskripsi dilengkapi sendiri — tidak ada di PDF)*
 
-> ❓ Kandidat tempat untuk memindahkan visual 3D node graph (proses = alur antar tahap, cocok dengan animasi sinyal antar-node).
+> ✅ Implementasi (`#process`, setelah Living Architecture): sticky cinematic split — kolom kiri = 6 langkah ber-nomor yang menyala saat scroll, kolom kanan sticky = motif canvas generatif berbeda per tahap (Discovery/Plan/Shape/Build/Verify/Launch). Tiap motif rAF-nya di-gate IntersectionObserver.
+> ✅ Visual 3D node graph TIDAK jadi dipindah ke sini — node graph tetap di Living Architecture (sebagai "Why cogniti?"), Process pakai motif canvas sendiri.
 
 ---
 
@@ -115,16 +116,19 @@ Daftar layanan (judul + deskripsi):
 - Headline "Build What Comes Next." tetap.
 - Role tetap: Innovation & Growth Manager, Technical Lead, Product Builder, Full Stack Engineer.
 
-### Industries We Serve (section baru) ⏳ ❓
+### Industries We Serve (section baru) ✅
 > We develop intelligent digital solutions across various industries:
 
 Government & Public Sector · Smart Cities · Digital Villages · Healthcare · Education · Finance · Hospitality · Retail & E-Commerce · Manufacturing · Logistics · Property & Real Estate · Professional Services · Startups & Enterprises
 
-> ❓ Kandidat tempat untuk memindahkan visual arc Deployments (arc = coverage sektor, cocok dengan daftar industri).
+> ✅ Implementasi (`#industries`, setelah Careers, sebelum Vision): **dual-row marquee**. 13 sektor dibagi 2 baris bergerak berlawanan arah (baris 1 ke kiri, baris 2 ke kanan), digerakkan per-frame via `translateX` (rAF di-gate IntersectionObserver). Hover memperlambat (factor 1→0.18, tidak berhenti total), ada edge-fade di kedua tepi, hormati `prefers-reduced-motion`.
+> ✅ Visual arc Deployments TIDAK jadi dipindah ke sini — Deployments tetap dengan arc-nya.
 
 ---
 
-## Halaman 8 — Vision & Mission (section baru) ⏳
+## Halaman 8 — Vision & Mission (section baru) ✅
+
+> ✅ Implementasi (`#vision`, setelah Industries, sebelum CTA): **editorial split**. Kolom kiri = Our Vision (sticky), kolom kanan = Our Mission sebagai daftar ber-nomor 01–05 dengan reveal bertahap saat scroll. Mobile: single-column, vision di-unstick.
 
 ### Our Vision
 > To become a trusted technology partner that empowers organizations through intelligent digital innovation, creating sustainable value for businesses and communities worldwide.
@@ -163,11 +167,11 @@ Government & Public Sector · Smart Cities · Digital Villages · Healthcare · 
 | 1 | Hero (slogan + subtext + 2 CTA) | slogan/subtext ✅, CTA ⏳ |
 | 2 | Manifesto | tetap |
 | 3 | Building Intelligent Digital Solutions (intro company) | ⏳ |
-| 4 | Our Services | ⏳ |
-| 5 | Why Choose Cogniti? | ⏳ |
-| 6 | Our Development Process | ⏳ |
-| 7 | Industries We Serve | ⏳ |
-| 8 | Vision & Mission | ⏳ |
+| 4 | Our Services | ✅ (3D conveyor) |
+| 5 | Why Choose Cogniti? | ⏳ (headline masih "Why cogniti?") |
+| 6 | Our Development Process | ✅ (sticky split + motif canvas) |
+| 7 | Industries We Serve | ✅ (dual-row marquee) |
+| 8 | Vision & Mission | ✅ (editorial split) |
 | 9 | Let's Build the Future Together (closing CTA) | ⏳ |
 | 10 | Careers (lowongan) | tetap, pindah ke akhir |
 | 11 | Awards (achievement founder) | ✅ dipindah ke akhir |
@@ -177,9 +181,9 @@ Government & Public Sector · Smart Cities · Digital Villages · Healthcare · 
 
 ## Pertanyaan terbuka yang perlu diputuskan
 
-1. **Posisi 2 tombol CTA** (Hero vs section bawah)?
-2. **Nasib visual 3D node graph** (Living Architecture) — buang / pindah ke Development Process / pertahankan?
-3. **Nasib visual arc** (Deployments) — buang / pindah ke Industries We Serve / pertahankan?
-4. **Our Services & Industries** — layout (grid kartu? list?) dan apakah benar mau tampilkan daftar layanan eksplisit (berlawanan dgn keputusan desain lama).
-5. **Urutan final** semua section.
-6. Deskripsi **"Deployment & Continuous Support"** (hal. 6) belum ada di PDF.
+1. **Posisi 2 tombol CTA** (Hero vs section bawah)? — ⏳ masih terbuka.
+2. ~~**Nasib visual 3D node graph** (Living Architecture)~~ — ✅ diputuskan **dipertahankan** di Living Architecture; Process pakai motif canvas terpisah.
+3. ~~**Nasib visual arc** (Deployments)~~ — ✅ diputuskan **dipertahankan** di Deployments; Industries pakai marquee terpisah.
+4. ~~**Our Services & Industries** — layout~~ — ✅ diputuskan: Services = 3D conveyor, Industries = dual-row marquee; daftar layanan eksplisit **disetujui** (mengganti keputusan desain lama).
+5. **Urutan final** semua section. — ⏳ sebagian: Vision & closing CTA belum di urutan akhir sesuai usulan; Founder/Award section saat ini sudah dihapus dari HTML (foto founder dihapus).
+6. ~~Deskripsi **"Deployment & Continuous Support"**~~ — ✅ dilengkapi sendiri (lihat hal. 6).
