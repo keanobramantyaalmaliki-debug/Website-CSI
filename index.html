@@ -184,6 +184,84 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
 .arc-item.is-active .arc-region   { color: #444; border-color: #2A2A2A; }
 
 /* ══════════════════════
+   OUR SERVICES — 3D conveyor
+══════════════════════ */
+/* z-index above the global #trail (11) so the ambient mouse trail paints
+   BEHIND the cards instead of stacking its additive light on top of them */
+#services { position: relative; z-index: 12; border-top: 1px solid #1E1E1E; }
+.svc-pin { position: relative; height: 100vh; height: 100dvh; overflow: hidden; }
+.svc-section-label { position: absolute; top: 48px; left: 50%; transform: translateX(-50%); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #333; white-space: nowrap; z-index: 4; }
+.svc-headline { position: absolute; top: 74px; left: 50%; transform: translateX(-50%); width: min(700px, 90vw); font-size: clamp(20px, 2.4vw, 34px); font-weight: 300; letter-spacing: -0.025em; color: #D0D0D0; text-align: center; z-index: 4; }
+
+/* 3D stage */
+.svc-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; perspective: 1600px; perspective-origin: 50% 46%; cursor: grab; outline: none; touch-action: pan-y; }
+.svc-stage.grabbing { cursor: grabbing; }
+.svc-card { pointer-events: auto; }        /* clickable (tap → snap to that card); drag still captured on the stage via bubbling */
+
+/* drag hint (discovery aid; fades on first interaction) */
+.svc-drag-hint { position: absolute; left: 50%; top: calc(50% + clamp(200px, 24vw, 290px)); transform: translateX(-50%); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #3A3A3A; z-index: 4; pointer-events: none; white-space: nowrap; display: flex; align-items: center; gap: 12px; }
+.svc-drag-arrow { display: inline-block; color: #4A4A4A; animation: svc-arrow 2.2s ease-in-out infinite; }
+.svc-drag-hint .svc-drag-arrow:last-child { animation-delay: 1.1s; }
+@keyframes svc-arrow { 0%,100% { opacity: 0.3; transform: translateX(0); } 50% { opacity: 1; transform: translateX(4px); } }
+.svc-track { position: relative; width: 0; height: 0; transform-style: preserve-3d; }
+.svc-card {
+  position: absolute; top: 0; left: 0;
+  width: clamp(260px, 30vw, 380px); height: clamp(330px, 40vw, 480px);
+  margin-left: calc(clamp(260px, 30vw, 380px) / -2);
+  margin-top: calc(clamp(330px, 40vw, 480px) / -2);
+  transform-style: preserve-3d; will-change: transform, opacity;
+}
+.svc-card-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.16,1,0.3,1); }
+.svc-card.is-flipped .svc-card-inner { transform: rotateY(180deg); }
+.svc-card-face {
+  position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: clamp(24px, 2.4vw, 36px);
+  background: linear-gradient(155deg, #161616, #0D0D0D);
+  border: 1px solid #262626;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+.svc-card.is-active .svc-card-face { border-color: #3A3A3A; box-shadow: 0 30px 80px -40px rgba(0,0,0,0.9); }
+
+/* hover: brighten border + lift glow + a soft top sheen (transform stays JS-driven) */
+.svc-card-face::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.4s ease; background: radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,0.10), rgba(255,255,255,0) 62%); z-index: 0; }
+.svc-stage:not(.grabbing) .svc-card:hover .svc-card-face { border-color: #5C5C5C; box-shadow: 0 40px 100px -42px rgba(0,0,0,0.95); }
+.svc-stage:not(.grabbing) .svc-card:hover .svc-card-face::before { opacity: 1; }
+.svc-stage:not(.grabbing) .svc-card:hover .svc-title { color: #FAFAFA; }
+.svc-stage:not(.grabbing) .svc-card:hover .svc-corner { color: #7E7E7E; }
+.svc-back { transform: rotateY(180deg); }
+.svc-num { font-size: 12px; font-weight: 400; letter-spacing: 0.18em; color: #444; font-variant-numeric: tabular-nums; transition: color 0.4s ease; }
+.svc-card.is-active .svc-num { color: #8A8A8A; }
+.svc-title { font-size: clamp(24px, 2.2vw, 34px); font-weight: 300; letter-spacing: -0.03em; line-height: 1.12; color: #C0C0C0; transition: color 0.4s ease; }
+.svc-card.is-active .svc-title { color: #F2F2F2; }
+.svc-title.glitch { text-shadow: 1.5px 0 rgba(255,255,255,0.55), -1.5px 0 rgba(150,150,150,0.45), 0 0 6px rgba(255,255,255,0.12); }
+.svc-corner { font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase; color: #2E2E2E; transition: color 0.4s ease; }
+.svc-card.is-active .svc-corner { color: #5A5A5A; }
+
+/* active-card generative flow-field FX (canvas, cursor-reactive). Sits behind
+   the text; only the centered+settled card hosts it (active-only, perf-safe). */
+.svc-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.svc-front > .svc-num, .svc-front > .svc-title, .svc-front > .svc-corner { position: relative; z-index: 1; }
+
+/* card back face — description (front = number+title, back = description: no redundancy) */
+.svc-card-face.svc-back-plain { justify-content: center; gap: 18px; padding-top: clamp(78px, 8vw, 104px); }
+.svc-back-desc { font-size: clamp(14px, 1.25vw, 16.5px); line-height: 1.7; color: #B4B4B4; letter-spacing: 0.005em; }
+
+/* name label in a back face's top-left corner (so you know which card you flipped) */
+.svc-back-corner { position: absolute; top: clamp(22px, 2.2vw, 32px); left: clamp(24px, 2.4vw, 36px); right: clamp(24px, 2.4vw, 36px); margin: 0; padding-bottom: 14px; border-bottom: 1px solid #232323; font-size: clamp(11px, 1.05vw, 13px); font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #7A7A7A; line-height: 1.45; }
+.svc-card.is-active .svc-back-corner { color: #9A9A9A; }
+
+/* AI card back face — description + 5 sub-items, grouped & vertically centered */
+.svc-card-face.svc-back-ai { justify-content: center; gap: clamp(18px, 2.6vh, 28px); padding-top: clamp(78px, 8vw, 104px); }
+.svc-back-label { font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #6A6A6A; margin-bottom: 4px; }
+.svc-sub-list { display: flex; flex-direction: column; gap: 12px; }
+.svc-sub-item { display: flex; align-items: baseline; gap: 12px; font-size: clamp(14px, 1.3vw, 17px); font-weight: 300; color: #C8C8C8; letter-spacing: -0.01em; }
+.svc-sub-item::before { content: ''; flex-shrink: 0; width: 5px; height: 5px; border-radius: 50%; background: #555; transform: translateY(-2px); }
+
+/* mobile fallback list (hidden on desktop) */
+.svc-list-mobile { display: none; }
+
+/* ══════════════════════
    LIVING ARCHITECTURE
 ══════════════════════ */
 #living-arch { position: relative; min-height: 100vh; display: grid; grid-template-columns: 38% 62%; border-top: 1px solid #262626; z-index: 1; }
@@ -282,8 +360,11 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
 
 .proc-grid { display: grid; grid-template-columns: 42% 58%; align-items: start; }
 
-/* Left: scrolling steps */
-.proc-steps { padding: 12vh 0 18vh; }
+/* Left: scrolling steps — generous top/bottom padding so the first and last
+   step centers fall WITHIN the sticky pane's pinned range (pane is 100vh; it
+   can only stay pinned for stepsHeight − 100vh, so each step center must sit
+   ≥ ~50vh from the column edges or it scrolls past an empty right pane). */
+.proc-steps { padding: 42vh 0 42vh; }
 .proc-step { position: relative; padding: clamp(40px, 6vh, 88px) clamp(20px, 3vw, 56px) clamp(40px, 6vh, 88px) clamp(28px, 3vw, 52px); border-left: 1px solid #1E1E1E; opacity: 0.32; transition: opacity 0.5s ease; }
 .proc-step::before { content: ''; position: absolute; left: -5px; top: calc(clamp(40px, 6vh, 88px) + 6px); width: 9px; height: 9px; border-radius: 50%; background: #141414; border: 1px solid #333; transition: background 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease, transform 0.45s ease; }
 .proc-step::after { content: ''; position: absolute; left: 0; top: 0; width: 1px; height: 0; background: linear-gradient(180deg, #AAA, #555); transition: height 0.5s cubic-bezier(0.16,1,0.3,1); }
@@ -309,11 +390,6 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
 .stage-caption { position: relative; font-size: clamp(15px, 1.45vw, 20px); font-weight: 300; letter-spacing: -0.012em; color: #C2C2C2; margin-top: 30px; min-height: 2.6em; max-width: 560px; }
 .stage-caption .cap-layer { position: absolute; inset: 0; line-height: 1.3; opacity: 0; transition: opacity 0.2s ease; will-change: opacity; }
 .stage-caption .cap-layer.show { opacity: 1; transition: opacity 0.26s ease 0.2s; }
-.stage-rail { display: flex; gap: 10px; margin-top: clamp(22px, 3.5vh, 44px); max-width: 560px; }
-.stage-rail .rail-seg { position: relative; height: 2px; flex: 1; background: #1C1C1C; overflow: hidden; border-radius: 2px; }
-.stage-rail .rail-seg span { position: absolute; inset: 0; width: 0; background: linear-gradient(90deg, #BBB, #666); transition: width 0.5s cubic-bezier(0.16,1,0.3,1); }
-.stage-rail .rail-seg.filled span { width: 100%; }
-.stage-rail .rail-seg.current span { width: 100%; background: linear-gradient(90deg, #FFF, #888); }
 
 @media (prefers-reduced-motion: reduce) {
   .proc-stage { position: relative; height: auto; }
@@ -424,6 +500,21 @@ html.is-touch #trail { display: none !important; }
   .arc-item { gap: 10px; }
   .arc-num { min-width: 20px; font-size: 11px; }
   .arc-region { display: none; }          /* region tag overflows the narrow arc on phones */
+
+  /* our services → drop the 3D conveyor (pin/scrub is heavy + pointer-reliant on phones);
+     show a stacked legible list instead */
+  #services { padding: 96px var(--pad); border-top: 1px solid #1E1E1E; }
+  .svc-pin { position: static; height: auto; overflow: visible; }
+  .svc-section-label { position: static; transform: none; text-align: left; margin-bottom: 18px; }
+  .svc-headline { position: static; transform: none; white-space: normal; text-align: left; font-size: clamp(26px, 7vw, 36px); margin-bottom: 48px; }
+  .svc-stage { display: none !important; }
+  .svc-list-mobile { display: flex; flex-direction: column; gap: 14px; }
+  .svc-m-item { border: 1px solid #232323; background: linear-gradient(155deg, #141414, #0D0D0D); padding: 24px; }
+  .svc-m-num { font-size: 11px; letter-spacing: 0.16em; color: #555; font-variant-numeric: tabular-nums; }
+  .svc-m-title { font-size: clamp(20px, 5.5vw, 26px); font-weight: 300; letter-spacing: -0.02em; color: #E8E8E8; margin: 10px 0 12px; line-height: 1.15; }
+  .svc-m-desc { font-size: 13.5px; line-height: 1.7; color: #6E6E6E; }
+  .svc-m-subs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .svc-m-sub { font-size: 11px; letter-spacing: 0.06em; color: #8A8A8A; border: 1px solid #303030; padding: 6px 11px; }
 
   /* living architecture → stack: text on top, real 3D canvas below (~55vh) */
   #living-arch { grid-template-columns: 1fr; min-height: auto; }
@@ -588,6 +679,97 @@ html.is-touch #trail { display: none !important; }
     </div>
   </section>
 
+  <!-- Our Services -->
+  <section id="services">
+    <div class="svc-pin">
+      <p class="svc-section-label">Our Services</p>
+      <h2 class="svc-headline">Building Intelligent Digital Solutions</h2>
+      <div class="svc-stage">
+        <div class="svc-track" id="svcTrack">
+          <article class="svc-card" data-index="0">
+            <div class="svc-card-inner"><div class="svc-card-face svc-front">
+              <span class="svc-num">01</span>
+              <h3 class="svc-title">Custom Software Development</h3>
+              <span class="svc-corner">Flip to explore</span>
+            </div></div>
+          </article>
+          <article class="svc-card" data-index="1">
+            <div class="svc-card-inner"><div class="svc-card-face svc-front">
+              <span class="svc-num">02</span>
+              <h3 class="svc-title">Web Application Development</h3>
+              <span class="svc-corner">Flip to explore</span>
+            </div></div>
+          </article>
+          <article class="svc-card" data-index="2">
+            <div class="svc-card-inner"><div class="svc-card-face svc-front">
+              <span class="svc-num">03</span>
+              <h3 class="svc-title">Mobile App Development</h3>
+              <span class="svc-corner">Flip to explore</span>
+            </div></div>
+          </article>
+          <article class="svc-card" data-index="3">
+            <div class="svc-card-inner">
+              <div class="svc-card-face svc-front">
+                <span class="svc-num">04</span>
+                <h3 class="svc-title">Artificial Intelligence Solutions</h3>
+                <span class="svc-corner">Flip to explore</span>
+              </div>
+              <div class="svc-card-face svc-back svc-back-ai">
+                <span class="svc-back-corner">Artificial Intelligence Solutions</span>
+                <p class="svc-back-desc">Leverage AI to automate workflows, enhance customer engagement, analyze data, and unlock new business opportunities through intelligent digital solutions.</p>
+                <div class="svc-sub-list">
+                  <p class="svc-back-label">Our AI services include:</p>
+                  <span class="svc-sub-item">Jenna.ai</span>
+                  <span class="svc-sub-item">Knowledge Assistants</span>
+                  <span class="svc-sub-item">Process Automation</span>
+                  <span class="svc-sub-item">AI-Powered Analytics</span>
+                  <span class="svc-sub-item">Custom AI Integration</span>
+                </div>
+              </div>
+            </div>
+          </article>
+          <article class="svc-card" data-index="4">
+            <div class="svc-card-inner"><div class="svc-card-face svc-front">
+              <span class="svc-num">05</span>
+              <h3 class="svc-title">Enterprise Solutions</h3>
+              <span class="svc-corner">Flip to explore</span>
+            </div></div>
+          </article>
+          <article class="svc-card" data-index="5">
+            <div class="svc-card-inner"><div class="svc-card-face svc-front">
+              <span class="svc-num">06</span>
+              <h3 class="svc-title">System Integration</h3>
+              <span class="svc-corner">Flip to explore</span>
+            </div></div>
+          </article>
+          <article class="svc-card" data-index="6">
+            <div class="svc-card-inner"><div class="svc-card-face svc-front">
+              <span class="svc-num">07</span>
+              <h3 class="svc-title">UI/UX Design</h3>
+              <span class="svc-corner">Flip to explore</span>
+            </div></div>
+          </article>
+          <article class="svc-card" data-index="7">
+            <div class="svc-card-inner"><div class="svc-card-face svc-front">
+              <span class="svc-num">08</span>
+              <h3 class="svc-title">Cloud &amp; DevOps</h3>
+              <span class="svc-corner">Flip to explore</span>
+            </div></div>
+          </article>
+          <article class="svc-card" data-index="8">
+            <div class="svc-card-inner"><div class="svc-card-face svc-front">
+              <span class="svc-num">09</span>
+              <h3 class="svc-title">Maintenance &amp; Technical Support</h3>
+              <span class="svc-corner">Flip to explore</span>
+            </div></div>
+          </article>
+        </div>
+      </div>
+      <div class="svc-drag-hint" id="svcDragHint"><span class="svc-drag-arrow">←</span> drag &middot; tap a card to flip <span class="svc-drag-arrow">→</span></div>
+      <div class="svc-list-mobile" id="svcListMobile"></div>
+    </div>
+  </section>
+
   <!-- Living Architecture -->
   <section id="living-arch">
     <div class="la-left">
@@ -662,7 +844,6 @@ html.is-touch #trail { display: none !important; }
             <span class="cap-layer show">Mapping the problem space.</span>
             <span class="cap-layer"></span>
           </div>
-          <div class="stage-rail" id="stageRail"></div>
         </div>
       </div>
     </div>
@@ -1294,6 +1475,243 @@ function setupScrollAnimations() {
   updateArc(0); requestAnimationFrame(()=>{updateArc(0);dTransCopy(0);});
 }
 
+/* ── Our Services — 3D conveyor, DRAG-driven (persis referensi Active Theory) ──
+   Press & drag sideways to move the cards; one card faces the camera (readable)
+   at center while neighbors recede + rotate edge-on. NOT scroll-pinned — the
+   page flows past normally, so no scroll-jacking / flow trap. Front face carries
+   number+title; tapping the centered card flips it to reveal the description on
+   the back (no redundancy). Card #4 (AI) flips to its 5 sub-items instead.
+   Tap a side card to slide it to center. CSS-3D only — rAF runs ONLY while
+   moving, idles when settled, so no rAF starvation of the WebGL sections. */
+(function(){
+  const sec=document.getElementById('services');
+  if(!sec)return;
+  if(window.IS_TOUCH||window.innerWidth<=768){buildServicesMobile();return;}
+  const stage=sec.querySelector('.svc-stage');
+  const cards=Array.from(sec.querySelectorAll('.svc-card'));
+  const N=cards.length;
+  const hint=document.getElementById('svcDragHint');
+  const AI_INDEX=3;
+  const DESC=[
+    'Tailor-made software designed around your unique business processes, helping you improve productivity, streamline operations, and support long-term growth.',
+    'Modern, responsive, and secure web applications built with performance, scalability, and user experience in mind.',
+    'Native and cross-platform mobile applications for Android and iOS that deliver seamless user experiences.',
+    'Leverage AI to automate workflows, enhance customer engagement, analyze data, and unlock new business opportunities through intelligent digital solutions.',
+    'Develop enterprise-grade platforms that integrate departments, automate operations, and improve decision-making across your organization.',
+    'Connect existing applications, third-party services, and business systems through secure and reliable API integrations.',
+    'Create intuitive and engaging digital experiences through user-centered interface and experience design.',
+    'Deploy, monitor, and optimize applications with modern cloud infrastructure and DevOps best practices for maximum reliability and scalability.',
+    'Ensure your applications remain secure, updated, and optimized with continuous support and proactive maintenance.'
+  ];
+  /* inject a description back-face into every non-AI card (AI card already has its
+     sub-item back face). Front = number+title, back = description → no redundancy. */
+  cards.forEach((card,i)=>{
+    if(i===AI_INDEX)return;
+    const inner=card.querySelector('.svc-card-inner');
+    const name=(card.querySelector('.svc-title')||{}).textContent||'';
+    const back=document.createElement('div');
+    back.className='svc-card-face svc-back svc-back-plain';
+    back.innerHTML=`<span class="svc-back-corner">${name}</span><p class="svc-back-desc">${DESC[i]}</p>`;
+    inner.appendChild(back);
+  });
+
+  let cardW=cards[0].offsetWidth||320;
+  function measure(){cardW=cards[0].offsetWidth||320;}
+  window.addEventListener('resize',measure);
+
+  /* conveyor position: continuous float in [0, N-1]; 0 = card 0 centered */
+  let pos=0, target=0, vel=0, dragging=false, interacted=false;
+  const MIN=0, MAX=N-1;
+
+  const SP_TX=0.92;                                     // horizontal spacing (card widths) — cards sit side-by-side, no overlap
+  const DRAG_SENS=0.42;                                 // smaller = lighter drag (less hand travel per card)
+  function placeCard(card,o){
+    const ao=Math.abs(o);
+    const tx=o*cardW*SP_TX;
+    const tz=-ao*300;                                   // recede for depth (gentler so side cards stay beside, not behind)
+    const ry=Math.max(-70,Math.min(70,-o*40));
+    const op=ao>3.6?0:Math.max(0,1-ao*0.26);
+    const br=Math.max(0.45,1-ao*0.24);                  // side cards dim for depth
+    card.style.transform=`translate3d(${tx.toFixed(1)}px,0,${tz.toFixed(1)}px) rotateY(${ry.toFixed(2)}deg)`;
+    card.style.opacity=op.toFixed(3);
+    card.style.filter=`brightness(${br.toFixed(3)})`;
+    card.style.zIndex=String(100-Math.round(ao*10));
+  }
+
+  let curActive=-1, flipped=-1;
+  function setActive(i){
+    if(i===curActive)return;
+    if(flipped>=0&&flipped!==i){cards[flipped].classList.remove('is-flipped');flipped=-1;}  // moving off a flipped card resets it
+    curActive=i;
+    cards.forEach((c,k)=>c.classList.toggle('is-active',k===i));
+    const t=cards[i].querySelector('.svc-title');
+    if(t){t.classList.add('glitch');setTimeout(()=>t.classList.remove('glitch'),190);}
+  }
+  function flipCard(i){
+    if(flipped===i){cards[i].classList.remove('is-flipped');flipped=-1;}
+    else{if(flipped>=0)cards[flipped].classList.remove('is-flipped');cards[i].classList.add('is-flipped');flipped=i;}
+  }
+
+  /* ── active-card generative flow-field FX (all 9 cards) ──
+     A cursor-reactive particle field drawn behind the title. Only ONE instance
+     runs at a time: it starts on the centered card once the conveyor is settled
+     and the Services section is on-screen, and stops the instant a drag begins
+     or the section scrolls away — so it's time-exclusive with the hero sphere /
+     node-graph loops and the per-frame cost is always a single field. */
+  const FX_CARDS=cards.map((_,i)=>i);
+  const fxMap={};
+  let svcVisible=false;
+  FX_CARDS.forEach(idx=>{
+    const front=cards[idx]&&cards[idx].querySelector('.svc-front');
+    if(!front)return;
+    const cv=document.createElement('canvas');
+    cv.className='svc-fx';
+    front.insertBefore(cv,front.firstChild);
+    const fctx=cv.getContext('2d');
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    let w=0,h=0,parts=[],raf2=null,mx=-999,my=-999,lmx=-999,lmy=-999,mvx=0,mvy=0,t=0;
+    const P=58, LINK2=2600;
+    function size(){const r=cv.getBoundingClientRect();w=r.width;h=r.height;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);fctx.setTransform(dpr,0,0,dpr,0,0);}
+    function seed(){parts=[];for(let i=0;i<P;i++)parts.push({x:Math.random()*w,y:Math.random()*h,vx:0,vy:0,r:0.5+Math.random()*1.1,o:0.05+Math.random()*0.11});}
+    function onMove(e){const r=cv.getBoundingClientRect();mx=e.clientX-r.left;my=e.clientY-r.top;}
+    function frame(){
+      raf2=requestAnimationFrame(frame);
+      t+=0.016;
+      fctx.clearRect(0,0,w,h);
+      if(lmx>-900){mvx=mx-lmx;mvy=my-lmy;} lmx=mx;lmy=my;
+      for(const p of parts){
+        const ang=(Math.sin(p.x*0.012+t*0.6)+Math.cos(p.y*0.014-t*0.5))*1.4;
+        let fx=Math.cos(ang)*0.18, fy=Math.sin(ang)*0.18;
+        const dx=p.x-mx,dy=p.y-my,d2=dx*dx+dy*dy,R=92;       // cursor wake: deflect + drag along motion
+        if(d2<R*R){const d=Math.sqrt(d2)||1,f=1-d/R;fx+=(dx/d)*f*1.7+mvx*f*0.10;fy+=(dy/d)*f*1.7+mvy*f*0.10;}
+        p.vx=(p.vx+fx)*0.90;p.vy=(p.vy+fy)*0.90;p.x+=p.vx;p.y+=p.vy;
+        if(p.x<-4)p.x=w+4;else if(p.x>w+4)p.x=-4;
+        if(p.y<-4)p.y=h+4;else if(p.y>h+4)p.y=-4;
+      }
+      for(let i=0;i<parts.length;i++)for(let j=i+1;j<parts.length;j++){
+        const a=parts[i],b=parts[j],dx=a.x-b.x,dy=a.y-b.y,d=dx*dx+dy*dy;
+        if(d<LINK2){fctx.strokeStyle='rgba(200,200,200,'+((1-d/LINK2)*0.085).toFixed(3)+')';fctx.lineWidth=0.5;fctx.beginPath();fctx.moveTo(a.x,a.y);fctx.lineTo(b.x,b.y);fctx.stroke();}
+      }
+      for(const p of parts){fctx.beginPath();fctx.arc(p.x,p.y,p.r,0,6.2832);fctx.fillStyle='rgba(235,235,235,'+p.o.toFixed(3)+')';fctx.fill();}
+    }
+    fxMap[idx]={
+      start(){if(raf2)return;size();if(!parts.length)seed();window.addEventListener('mousemove',onMove);raf2=requestAnimationFrame(frame);},
+      stop(){if(raf2){cancelAnimationFrame(raf2);raf2=null;}window.removeEventListener('mousemove',onMove);if(w)fctx.clearRect(0,0,w,h);},
+      resize(){if(raf2)size();}
+    };
+  });
+  function fxStart(i){if(!svcVisible)return;const f=fxMap[i];if(f)f.start();}
+  function fxStopAll(){for(const k in fxMap)fxMap[k].stop();}
+  window.addEventListener('resize',()=>{for(const k in fxMap)fxMap[k].resize();});
+  const svcIO=new IntersectionObserver(es=>{
+    svcVisible=es[0].isIntersecting;
+    if(svcVisible){if(!raf)fxStart(curActive);} else fxStopAll();
+  },{threshold:0.2});
+  svcIO.observe(sec);
+
+  function render(){
+    cards.forEach((card,i)=>placeCard(card,i-pos));
+    setActive(Math.max(0,Math.min(N-1,Math.round(pos))));
+  }
+
+  /* rAF loop runs only while moving; cancels itself when settled */
+  let raf=null;
+  function loop(){
+    if(dragging){raf=requestAnimationFrame(loop);render();return;}
+    // inertia + snap to nearest card
+    const snap=Math.max(MIN,Math.min(MAX,Math.round(target)));
+    pos+=(snap-pos)*0.12+vel;
+    vel*=0.9;
+    render();
+    if(Math.abs(snap-pos)<0.001&&Math.abs(vel)<0.0004){pos=snap;target=snap;render();raf=null;fxStart(curActive);return;}
+    raf=requestAnimationFrame(loop);
+  }
+  function kick(){fxStopAll();if(!raf)raf=requestAnimationFrame(loop);}
+
+  function goTo(i){target=Math.max(MIN,Math.min(MAX,i));vel=0;dismissHint();kick();}
+
+  /* ── pointer drag ── */
+  let startX=0,startPos=0,lastX=0,lastT=0,downTarget=null,moved=false;
+  const TAP_PX=6;                                                       // movement under this = a tap, not a drag
+  function dismissHint(){if(interacted)return;interacted=true;if(hint)gsap.to(hint,{opacity:0,duration:0.4});}
+  stage.addEventListener('pointerdown',e=>{
+    dragging=true;startX=e.clientX;startPos=pos;lastX=e.clientX;lastT=performance.now();vel=0;
+    downTarget=e.target;moved=false;
+    stage.setPointerCapture(e.pointerId);stage.classList.add('grabbing');
+    dismissHint();kick();
+  });
+  stage.addEventListener('pointermove',e=>{
+    if(!dragging)return;
+    const dx=e.clientX-startX;
+    if(Math.abs(dx)>TAP_PX)moved=true;
+    pos=Math.max(MIN-0.4,Math.min(MAX+0.4,startPos-dx/(cardW*DRAG_SENS)));   // drag left → advance
+    const now=performance.now(),dt=now-lastT;
+    if(dt>0){vel=-(e.clientX-lastX)/(cardW*DRAG_SENS)*(16/dt)*0.5;lastX=e.clientX;lastT=now;}
+  });
+  function endDrag(e){
+    if(!dragging)return;
+    dragging=false;stage.classList.remove('grabbing');
+    try{stage.releasePointerCapture(e.pointerId);}catch(_){}
+    if(!moved){                                                         // tap (no real drag)
+      const card=downTarget&&downTarget.closest&&downTarget.closest('.svc-card');
+      if(card){
+        const i=cards.indexOf(card);
+        if(i>=0){
+          const centered=Math.round(pos)===i;
+          if(centered)flipCard(i);                                      // tap centered card → flip to read description
+          else goTo(i);                                                 // tap side card → slide it to center
+          return;
+        }
+      }
+    }
+    target=Math.max(MIN,Math.min(MAX,Math.round(pos-vel*6)));           // fling toward velocity
+    kick();
+  }
+  stage.addEventListener('pointerup',endDrag);
+  stage.addEventListener('pointercancel',endDrag);
+  stage.addEventListener('lostpointercapture',()=>{if(dragging){dragging=false;stage.classList.remove('grabbing');target=Math.max(MIN,Math.min(MAX,Math.round(pos)));kick();}});
+
+  /* keyboard a11y */
+  stage.setAttribute('tabindex','0');
+  stage.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'){goTo(Math.round(target)+1);e.preventDefault();}
+    else if(e.key==='ArrowLeft'){goTo(Math.round(target)-1);e.preventDefault();}
+  });
+
+  measure();
+  render();
+  requestAnimationFrame(()=>{measure();render();});
+})();
+
+/* Mobile fallback list for Services (built when 3D conveyor is skipped) */
+function buildServicesMobile(){
+  const wrap=document.getElementById('svcListMobile');
+  if(!wrap||wrap.childElementCount)return;
+  const DATA=[
+    ['01','Custom Software Development','Tailor-made software designed around your unique business processes, helping you improve productivity, streamline operations, and support long-term growth.'],
+    ['02','Web Application Development','Modern, responsive, and secure web applications built with performance, scalability, and user experience in mind.'],
+    ['03','Mobile App Development','Native and cross-platform mobile applications for Android and iOS that deliver seamless user experiences.'],
+    ['04','Artificial Intelligence Solutions','Leverage AI to automate workflows, enhance customer engagement, analyze data, and unlock new business opportunities through intelligent digital solutions.',['Jenna.ai','Knowledge Assistants','Process Automation','AI-Powered Analytics','Custom AI Integration']],
+    ['05','Enterprise Solutions','Develop enterprise-grade platforms that integrate departments, automate operations, and improve decision-making across your organization.'],
+    ['06','System Integration','Connect existing applications, third-party services, and business systems through secure and reliable API integrations.'],
+    ['07','UI/UX Design','Create intuitive and engaging digital experiences through user-centered interface and experience design.'],
+    ['08','Cloud & DevOps','Deploy, monitor, and optimize applications with modern cloud infrastructure and DevOps best practices for maximum reliability and scalability.'],
+    ['09','Maintenance & Technical Support','Ensure your applications remain secure, updated, and optimized with continuous support and proactive maintenance.']
+  ];
+  DATA.forEach(d=>{
+    const item=document.createElement('div');
+    item.className='svc-m-item';
+    let subs='';
+    if(d[3])subs='<div class="svc-m-subs">'+d[3].map(s=>`<span class="svc-m-sub">${s}</span>`).join('')+'</div>';
+    item.innerHTML=`<span class="svc-m-num">${d[0]}</span><h3 class="svc-m-title">${d[1]}</h3><p class="svc-m-desc">${d[2]}</p>${subs}`;
+    wrap.appendChild(item);
+  });
+}
+/* always build the (display:none on desktop) mobile list so a desktop→mobile
+   resize never reveals an empty Services section */
+if(document.readyState!=='loading')buildServicesMobile();
+else document.addEventListener('DOMContentLoaded',buildServicesMobile);
+
 /* ── Process — sticky split; right pane = a generated visual per stage ──
    The left column already names + numbers each step, so the right pane never
    repeats that. Instead each stage gets its own animated canvas motif that
@@ -1307,7 +1725,6 @@ function setupScrollAnimations() {
   const kicker=document.getElementById('stageKicker');
   const capLayers=Array.from(document.querySelectorAll('#stageCaption .cap-layer'));
   let capFront=0;
-  const rail=document.getElementById('stageRail');
   if(!steps.length||!canvas)return;
   const ctx=canvas.getContext('2d');
 
@@ -1319,9 +1736,6 @@ function setupScrollAnimations() {
     {kicker:'Verify',     caption:'Sweeping for faults — functionality, security, performance.',                 draw:drawTesting},
     {kicker:'Launch',     caption:'Going live — then monitoring and improving.',                                  draw:drawDeployment},
   ];
-
-  rail.innerHTML=steps.map(()=>'<div class="rail-seg"><span></span></div>').join('');
-  const segs=Array.from(rail.children);
 
   /* ── canvas sizing (DPR-aware) ── */
   let W=0,H=0;const dpr=Math.min(window.devicePixelRatio||1,2);
@@ -1450,7 +1864,6 @@ function setupScrollAnimations() {
     steps.forEach((s,k)=>{s.classList.toggle('is-active',k===i);s.classList.toggle('is-past',k<i);});
     kicker.textContent=STAGES[i].kicker;
     swapCaption(STAGES[i].caption);
-    segs.forEach((seg,k)=>{seg.classList.toggle('filled',k<i);seg.classList.toggle('current',k===i);});
   }
 
   /* ── render loop (paused when section off-screen) ── */
