@@ -406,6 +406,30 @@ Branch: `feat/mobile-responsive-heavy-effects` · commit `c7e5c1d` (push ke orig
 
 ---
 
+## Mobile Responsive — Full Audit & Layout Fixes ✅ (2026-06-30)
+
+**Konsep:** lanjutan dari "Drop Heavy Effects". Audit menyeluruh semua section di `≤768px` (320–414px) buat ketemu overlap, tap target kekecilan, font scaling, spacing rhythm, dan dead gap. Semua perbaikan murni CSS (+ 1 geometri JS arc), no konten hilang.
+
+**7 perubahan:**
+
+1. **Deployments arc — overlap dgn teks kiri** (bug dilaporkan user, screenshot). Apex arc di-center `x:0.50` (DCX) numpuk sama kolom teks 62% → garis+label "01 Public Services" ketimpa headline. Fix dua arah: (a) geometri JS `DAX=DVW*(DMOB?0.56:0.50)` — apex digeser kanan di mobile (`DMOB=DVW<=768`); (b) CSS `.deploy-left` 62%→54%, headline+copy diperkecil. (index.html JS ~1554-1556, CSS ~546-554)
+
+2. **Living-arch "Why cogniti?" — list jadi kartu** (user minta opsi list bersih). Fallback mobile sebelumnya pakai card chrome (border + gradient bg). Diganti list minimal: `border-top: 1px solid #1E1E1E` per item, item pertama tanpa garis, no border/bg. Plus `.la-left justify-content: flex-start` (dari desktop `center`) + headline `margin-bottom: 0` buat hapus dead gap antara headline & item pertama. (index.html CSS ~564-575)
+
+3. **Hamburger tap target** — 26×16px (di bawah min a11y 44px). Jadi 44×44px flex hit area, icon `::after` di-recenter `left:50%/translate(-50%,-50%)`, `margin-right:-9px` biar tetap rapat ke edge. (index.html CSS ~522-528)
+
+4. **Manifesto — teks ketekan** — `.block-wrap` padding `0 12vw` (≈45px/sisi di 375px) bikin teks center jadi strip sempit. Override mobile `padding: 0 var(--pad)` + `line-height:1.3`. (index.html CSS ~540-542)
+
+5. **CTA form — dead gap antar field** (terburuk). Field stacked mewarisi desktop `.form-line line-height: 2.6` → jarak vertikal raksasa. Reset `line-height:1.5` + `.form-sentence gap:18px` buat rhythm baris. (index.html CSS ~617-621)
+
+6. **Menu overlay — clip di HP pendek** — desktop `.menu-body overflow:hidden` + `.menu-times margin-top: clamp(80px,11vw,160px)` motong timezone block di layar pendek. Override `overflow-y:auto` + `padding 48px` + `.menu-times margin-top:8px`. (index.html CSS ~518-520)
+
+7. **Services conveyor + 480px polish** — kartu `min(74vw,320px)`/`min(96vw,420px)` (dari floor 260px) biar center card pas, drag hint diangkat, headline `top:64px`. Block `≤480px`: subtext/CTA/deploy headline/arc-category diperkecil. (index.html CSS ~556-562, ~632-641)
+
+**Verifikasi (Puppeteer headless Chrome, touch-emulated):** overflow horizontal **0** di 320/360/375/414px (`docW===winW` semua). Screenshot tiap section (hero, manifesto, deployments 5-step arc, services conveyor, why-cogniti list, process, careers, industries, vision, CTA form, menu overlay 390×844 + 360×640) — semua bersih, arc clear dari teks, form rhythm rapi, menu pendek scrollable. **Belum diuji:** gesture nyata (drag/tap) & landscape — headless cuma layout.
+
+---
+
 ## Referensi Visual
 
 | Elemen | Inspirasi |
