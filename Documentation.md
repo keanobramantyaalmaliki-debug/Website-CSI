@@ -430,6 +430,20 @@ Branch: `feat/mobile-responsive-heavy-effects` · commit `c7e5c1d` (push ke orig
 
 ---
 
+## Mobile Responsive — Careers Padding & Services Flip Fixes ✅ (2026-06-30)
+
+**Konsep:** lanjutan polish dari Full Audit. Dua bug spesifik dilaporkan user (screenshot), keduanya murni CSS.
+
+**2 perubahan:**
+
+1. **Careers — padding role-list nggak konsisten** (bug dilaporkan user, screenshot). `.role-header { flex-wrap: wrap }` bikin judul panjang #01 "Innovation & Growth Manager" turun ke baris flex baru di bawah nomor (flush-left), sedangkan judul pendek #02-04 tetap nempel di samping nomor (ke-indent). Fix: `.role-title { flex: 1; min-width: 0 }` — judul tetap di baris nomor & wrap teksnya sendiri di dalam; `.role-meta`/`.role-arrow` dikasih `flex-basis: 100%` + `padding-left: clamp(36px, 3.5vw, 56px)` (match lebar `.role-index`) biar align rapi di bawah judul. (index.html CSS ~604-609)
+
+2. **Services — flip card backface bleed** (bug dilaporkan user, screenshot). Pas kartu di-flip, teks front yg ke-mirror ("Custom Software Development" kebalik) nembus tembus ke back face. Penyebab: cuma back face yg punya transform 3D (`rotateY(180deg)`), jadi browser render-nya di konteks 3D & hormatin `backface-visibility: hidden`; front face nggak punya transform → dianggap flat (2D) → backface culling-nya diabaikan → front kebalik bocor. Fix: kasih identity transform eksplisit `.svc-front { transform: rotateY(0deg) }` biar front tetap di konteks 3D & backface-nya ke-cull. Satu rule shared → beresin semua 9 kartu sekaligus (termasuk AI card #4 yg back face-nya beda). (index.html CSS ~235)
+
+**Verifikasi (Puppeteer headless Chrome):** careers 390×844 — #01 judul panjang sekarang konsisten ke-indent kayak #02-04, meta/arrow align di bawah judul. Services 1280×900 — flip kartu #0/#1/#3/#4 semua back face bersih, no mirror bleed.
+
+---
+
 ## Referensi Visual
 
 | Elemen | Inspirasi |
