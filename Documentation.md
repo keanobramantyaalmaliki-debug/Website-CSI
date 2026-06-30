@@ -67,15 +67,20 @@ Feel referensi: Linear, Vercel.
 | 1 | **Hero** | `#hero` | Curiosity — WebGL sphere full-screen |
 | 2 | **Manifesto** | `#manifesto` | Worldview building — word-by-word reveal |
 | 3 | **Selected Deployments** | `#deployments` | Implied authority — arc-spine |
-| 4 | **Living Architecture** | `#living-arch` | Interactive 3D simulation — centerpiece |
-| 5 | **Careers** | `#careers` | Talent acquisition |
-| 6 | **CTA / Contact** | `#cta` | Dorongan konversi |
-| 7 | **Footer** | `#footer` | — |
+| 4 | **Our Services** | `#services` | 3D conveyor — daftar 9 layanan (drag + flip) |
+| 5 | **Living Architecture** | `#living-arch` | Interactive 3D simulation — centerpiece |
+| 6 | **Our Development Process** | `#process` | Sticky split — 6 langkah + motif canvas per tahap |
+| 7 | **Careers** | `#careers` | Talent acquisition |
+| 8 | **Industries We Serve** | `#industries` | Dual-row marquee — 13 sektor |
+| 9 | **Vision & Mission** | `#vision` | Editorial split — vision sticky + mission list |
+| 10 | **CTA / Contact** | `#cta` | Dorongan konversi |
+| 11 | **Footer** | `#footer` | — |
 
 > Minimal project, klien, dan produk — credibility dibangun lewat cara berpikir dan siapa di baliknya, bukan portfolio. Pendekatan McKinsey/Stripe.
 > Loading Screen ditunda, bukan bagian dari MVP 1 awal.
 > "Who We Serve" section dihapus — digantikan Living Architecture.
-> **Founder section dihapus (2026-06-29)** atas permintaan atasan. Semua kode (CSS + HTML + JS hover & achievement overlay) di-backup ke `Backup-Founder-Section.md` untuk re-integrasi sewaktu-waktu. Kandidat pengganti slot lama: "Industries We Serve" (lihat `Revisi.md`) — belum diputuskan.
+> **Founder section dihapus (2026-06-29)** atas permintaan atasan. Semua kode (CSS + HTML + JS hover & achievement overlay) di-backup ke `Backup-Founder-Section.md` untuk re-integrasi sewaktu-waktu. Slot lama (Careers → CTA) kini diisi **Industries We Serve** + **Vision & Mission** (lihat section baru di bawah).
+> **Section baru ditambah (2026-06-30)** dari revisi PDF atasan: Our Services, Our Development Process, Industries We Serve, Vision & Mission. Positioning bergeser dari abstrak/misterius → company profile eksplisit. Detail per section di bawah.
 
 ---
 
@@ -129,7 +134,7 @@ Founder section dihapus dari `index.html` atas permintaan atasan (revisi PDF: "s
 
 **Backup penuh:** `Backup-Founder-Section.md` — semua potongan kode + posisi lama + urutan re-integrasi. Foto di `Photo-Founder-section/` belum dihapus (masih dipakai sebagai OG/Twitter share image di `<head>`).
 
-**Kandidat pengganti slot lama (Careers → CTA):** "Industries We Serve" (13 sektor, dari `Revisi.md`) — belum diputuskan; ada pertimbangan tumpang tindih dengan Deployments.
+**Slot lama (Careers → CTA) — sudah diisi (2026-06-30):** "Industries We Serve" (13 sektor, dual-row marquee) + "Vision & Mission" (editorial split) ditambahkan. Tumpang tindih dengan Deployments dihindari: Deployments tetap pakai arc + nama klien implisit, Industries pakai marquee sektor murni. Lihat section masing-masing di bawah.
 
 ---
 
@@ -150,6 +155,28 @@ Founder section dihapus dari `index.html` atas permintaan atasan (revisi PDF: "s
 **Arc bleed ✅:** Span visual arc (`DVISHALF`, DVH*0.62) dipisah dari span item/tick (`DHALF`, DVH*0.46) — garis arc + guide (inner/outer) memanjang lewat tepi atas/bawah viewport biar tidak keliatan terpotong, tapi titik sektor & tick tetap dalam area aman.
 
 **Rules:** No client logo, no project name, no screenshots, no pricing.
+
+---
+
+## Section — Our Services ✅ Implemented (2026-06-30)
+
+**Konsep:** Daftar 9 layanan eksplisit (revisi PDF hal. 2–3) — membalik keputusan desain lama "tidak ada daftar layanan". Disajikan sebagai **3D conveyor / rotating bookshelf** (terinspirasi Active Theory), bukan grid kartu statis.
+
+**Kenapa CSS 3D, bukan Three.js:** teks real-font tetap tajam, tidak menambah WebGL context baru (hero sphere + living-arch graph sudah 2 context — menambah lagi memicu rAF-starvation), reuse stack GSAP yang ada. Motion (translateZ + rotateY) native ke CSS `transform-style: preserve-3d`.
+
+**Mekanik (desktop):**
+- `.svc-stage` = perspective container (1600px); `.svc-track` = preserve-3d; 9 `.svc-card` absolut.
+- **Drag-driven, BUKAN scroll-pinned** — page mengalir normal (tidak ada scroll-jacking). Press & drag sideways menggerakkan conveyor; satu kartu menghadap kamera (readable) di center, tetangga mundur + rotateY edge-on.
+- `pos` = float kontinu di [0, N-1]; inertia + snap ke kartu terdekat. **rAF loop hanya jalan saat bergerak**, idle saat settled → no rAF starvation.
+- **No-redundancy:** front face = nomor + judul saja; tap kartu yang di center → flip 180° (`.is-flipped`) menampilkan deskripsi di back face. Tap kartu samping → slide ke center.
+- Kartu #4 (AI Solutions) punya back face khusus = 5 sub-item (Jenna.ai · Knowledge Assistants · Process Automation · AI-Powered Analytics · Custom AI Integration).
+- Back face deskripsi di-inject via JS untuk 8 kartu non-AI (AI sudah punya back face di HTML).
+- **Active-card FX:** flow-field particle canvas (cursor-reactive) di belakang judul kartu center; hanya 1 instance jalan, IO-gated (`svcVisible`), berhenti saat drag/section off-screen → time-exclusive dengan loop WebGL lain.
+- A11y: `.svc-stage` `tabindex=0`, ArrowLeft/Right navigasi kartu.
+
+**Mobile (`IS_TOUCH` / ≤768px):** 3D conveyor di-skip total (`buildServicesMobile()`), ganti list bertumpuk legible (`.svc-list-mobile`) — tiap layanan = nomor + judul + deskripsi (+ sub-item untuk AI). Drag-hint disembunyikan (`.svc-drag-hint display:none`) karena `.svc-pin` static di mobile dan akan bleed ke list.
+
+**9 layanan:** Custom Software Development · Web Application Development · Mobile App Development · Artificial Intelligence Solutions · Enterprise Solutions · System Integration · UI/UX Design · Cloud & DevOps · Maintenance & Technical Support.
 
 ---
 
@@ -219,6 +246,24 @@ Founder section dihapus dari `index.html` atas permintaan atasan (revisi PDF: "s
 
 ---
 
+## Section — Our Development Process ✅ Implemented (2026-06-30)
+
+**Konsep:** 6 langkah proses kerja (revisi PDF hal. 6). Layout = **sticky cinematic split**.
+
+**Mekanik:**
+- `.proc-grid` = 2 kolom (42% / 58%). Kiri = 6 `.proc-step` ber-nomor yang scroll normal; kanan = `.proc-stage` **sticky** (`position: sticky; top:0; height:100vh`).
+- Step aktif ditentukan via scroll: step yang centernya paling dekat ke anchor (`innerHeight*0.5`) → `.is-active`; step di atasnya → `.is-past` (connector line terisi).
+- **No-redundancy:** kolom kiri sudah menamai + menomori tiap step, jadi pane kanan TIDAK mengulang — tiap tahap dapat **motif canvas generatif** yang menunjukkan apa yang dilakukan tahap itu, plus kicker satu-kata (Understand/Plan/Shape/Build/Verify/Launch) + caption.
+- 6 motif draw-function: `drawDiscovery` (sinyal konvergen), `drawStrategy` (rute milestone + pulse), `drawDesign` (wireframe assembling), `drawDevelopment` (baris kode menumpuk + kursor blink), `drawTesting` (scan-line + checkmark grid), `drawDeployment` (broadcast node ke network).
+- Caption crossfade via 2 layer bertumpuk (`.cap-layer`) biar tidak overlap saat scroll cepat.
+- **rAF di-gate IntersectionObserver** (`visible`) — render loop diam saat section off-screen → no starvation. `prefers-reduced-motion` → stage jadi `position: relative` (un-stick).
+
+**Catatan:** Deskripsi step 6 ("Deployment & Continuous Support") dilengkapi sendiri — tidak tercantum di PDF.
+
+**Visual 3D node graph TIDAK dipindah ke sini** — tetap di Living Architecture; Process pakai motif canvas terpisah.
+
+---
+
 ## Section 5 — Careers ✅ Implemented
 
 **Headline:** Build What Comes Next.
@@ -243,6 +288,37 @@ Founder section dihapus dari `index.html` atas permintaan atasan (revisi PDF: "s
 - Overlay gelap `rgba(10,10,10,0.32)` (`::after`) biar tetap restrained, `◉` placeholder dihapus
 
 **Catatan:** Metadata role (Full-time · Remote/Hybrid · divisi) masih asumsi — perlu dikonfirmasi.
+
+---
+
+## Section — Industries We Serve ✅ Implemented (2026-06-30)
+
+**Konsep:** 13 sektor yang dilayani (revisi PDF hal. 7). Layout = **dual-row marquee**.
+
+**Mekanik:**
+- `#industries` `overflow: hidden`; head block (`label` + `headline` + `sub`) reveal IO-gated.
+- 2 baris (`.ind-row`), tiap baris berisi `.ind-track` dengan 2 `.ind-group` identik (group ke-2 `aria-hidden`) supaya saat scroll wrap, group duplikat menutup seam.
+- **JS-driven, BUKAN CSS animation:** CSS animation cuma bisa play/pause (binary); untuk hover **memperlambat** (bukan stop), `translateX` di-set per-frame dan speed `factor` di-ease 1 → 0.18 saat `mouseenter`. Baris 1 jalan ke kiri (`dir=-1`, 38px/s), baris 2 ke kanan (`dir=1`, 32px/s).
+- `t.pos` selalu naik di `[0, half)` (half = lebar 1 group); translate dijaga dalam `(-half, 0]`.
+- **rAF di-gate IntersectionObserver** — loop diam saat off-screen. `prefers-reduced-motion` → IIFE langsung `return` (marquee statis).
+- Edge-fade gradient di kedua tepi (`::before`/`::after`) supaya item larut, bukan terpotong tajam.
+
+**Catatan:** Visual arc Deployments TIDAK jadi dipindah ke sini — Deployments tetap dengan arc-nya.
+
+**13 sektor:** Government & Public Sector · Smart Cities · Digital Villages · Healthcare · Education · Finance · Hospitality · Retail & E-Commerce · Manufacturing · Logistics · Property & Real Estate · Professional Services · Startups & Enterprises.
+
+---
+
+## Section — Vision & Mission ✅ Implemented (2026-06-30)
+
+**Konsep:** Visi + 5 poin misi (revisi PDF hal. 8). Layout = **editorial split**.
+
+**Mekanik:**
+- `.vm-grid` = 2 kolom (`minmax(0,1fr)` / `minmax(0,1.05fr)`). Kiri = Our Vision (`.vm-vision` `position: sticky; top:120px`), kanan = Our Mission sebagai `<ol>` ber-nomor 01–05.
+- **No-redundancy:** vision = satu kalimat besar yang menetap; mission = daftar aksi numerik — dua pane beda peran, tidak mengulang.
+- Reveal bertahap: label/vision-text + tiap `.vm-item` di-IO-gate, `transition-delay` di-stagger (`0.06 + i*0.08`s).
+- Hover pada mission item menyalakan nomor + teks.
+- Mobile: single-column (`grid-template-columns: 1fr`), vision di-unstick (`position: static`).
 
 ---
 
@@ -338,6 +414,13 @@ Sebelumnya nol. Ditambah: meta description, canonical, favicon (`Logo/Logo-Final
 - 3 logo nav-brand → click handler smooth-scroll ke top (no stray `#`).
 
 **Belum dikerjakan (#4):** file non-produksi masih ter-track git (`*-demo.html`, `*.md`, dll) — publicly reachable kalau seluruh repo di-deploy. Perlu di-exclude/hapus sebelum deploy.
+
+**#7 — A11y & kontras (2026-06-30)**
+- **Link color leak:** UA default mewarnai `<a>` tanpa `color` eksplisit jadi biru (`rgb(0,0,238)`) — bocor di tema grayscale. Fix: `color: inherit` pada `.nav-brand` & `.menu-right-item`.
+- **Kontras label:** sejumlah section-label pakai abu terlalu gelap (#2A2A2A/#333 di atas #0A0A0A ≈ 1.3–1.7:1, gagal WCAG). Dinaikkan ke **#5A5A5A** (≈ 3:1, lolos AA-large) di label Manifesto/Deployments/Services/Living-Arch/Careers/Process.
+
+**#8 — Refresh-freeze keyboard (2026-06-30)**
+Page-reveal di-gate sampai first scroll intent (`onFirstScroll` → `playEntry()`). Pengguna keyboard tak pernah memicu `wheel`/`touchmove`, jadi halaman beku. Fix: listener `keydown` + set `SCROLL_KEYS` (Space/PageUp-Down/Arrow/Home/End) → `onFirstScrollKey` ikut memicu reveal.
 
 ---
 
