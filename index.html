@@ -282,8 +282,11 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
 
 .proc-grid { display: grid; grid-template-columns: 42% 58%; align-items: start; }
 
-/* Left: scrolling steps */
-.proc-steps { padding: 12vh 0 18vh; }
+/* Left: scrolling steps — generous top/bottom padding so the first and last
+   step centers fall WITHIN the sticky pane's pinned range (pane is 100vh; it
+   can only stay pinned for stepsHeight − 100vh, so each step center must sit
+   ≥ ~50vh from the column edges or it scrolls past an empty right pane). */
+.proc-steps { padding: 42vh 0 42vh; }
 .proc-step { position: relative; padding: clamp(40px, 6vh, 88px) clamp(20px, 3vw, 56px) clamp(40px, 6vh, 88px) clamp(28px, 3vw, 52px); border-left: 1px solid #1E1E1E; opacity: 0.32; transition: opacity 0.5s ease; }
 .proc-step::before { content: ''; position: absolute; left: -5px; top: calc(clamp(40px, 6vh, 88px) + 6px); width: 9px; height: 9px; border-radius: 50%; background: #141414; border: 1px solid #333; transition: background 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease, transform 0.45s ease; }
 .proc-step::after { content: ''; position: absolute; left: 0; top: 0; width: 1px; height: 0; background: linear-gradient(180deg, #AAA, #555); transition: height 0.5s cubic-bezier(0.16,1,0.3,1); }
@@ -309,11 +312,6 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
 .stage-caption { position: relative; font-size: clamp(15px, 1.45vw, 20px); font-weight: 300; letter-spacing: -0.012em; color: #C2C2C2; margin-top: 30px; min-height: 2.6em; max-width: 560px; }
 .stage-caption .cap-layer { position: absolute; inset: 0; line-height: 1.3; opacity: 0; transition: opacity 0.2s ease; will-change: opacity; }
 .stage-caption .cap-layer.show { opacity: 1; transition: opacity 0.26s ease 0.2s; }
-.stage-rail { display: flex; gap: 10px; margin-top: clamp(22px, 3.5vh, 44px); max-width: 560px; }
-.stage-rail .rail-seg { position: relative; height: 2px; flex: 1; background: #1C1C1C; overflow: hidden; border-radius: 2px; }
-.stage-rail .rail-seg span { position: absolute; inset: 0; width: 0; background: linear-gradient(90deg, #BBB, #666); transition: width 0.5s cubic-bezier(0.16,1,0.3,1); }
-.stage-rail .rail-seg.filled span { width: 100%; }
-.stage-rail .rail-seg.current span { width: 100%; background: linear-gradient(90deg, #FFF, #888); }
 
 @media (prefers-reduced-motion: reduce) {
   .proc-stage { position: relative; height: auto; }
@@ -662,7 +660,6 @@ html.is-touch #trail { display: none !important; }
             <span class="cap-layer show">Mapping the problem space.</span>
             <span class="cap-layer"></span>
           </div>
-          <div class="stage-rail" id="stageRail"></div>
         </div>
       </div>
     </div>
@@ -1307,7 +1304,6 @@ function setupScrollAnimations() {
   const kicker=document.getElementById('stageKicker');
   const capLayers=Array.from(document.querySelectorAll('#stageCaption .cap-layer'));
   let capFront=0;
-  const rail=document.getElementById('stageRail');
   if(!steps.length||!canvas)return;
   const ctx=canvas.getContext('2d');
 
@@ -1319,9 +1315,6 @@ function setupScrollAnimations() {
     {kicker:'Verify',     caption:'Sweeping for faults — functionality, security, performance.',                 draw:drawTesting},
     {kicker:'Launch',     caption:'Going live — then monitoring and improving.',                                  draw:drawDeployment},
   ];
-
-  rail.innerHTML=steps.map(()=>'<div class="rail-seg"><span></span></div>').join('');
-  const segs=Array.from(rail.children);
 
   /* ── canvas sizing (DPR-aware) ── */
   let W=0,H=0;const dpr=Math.min(window.devicePixelRatio||1,2);
@@ -1450,7 +1443,6 @@ function setupScrollAnimations() {
     steps.forEach((s,k)=>{s.classList.toggle('is-active',k===i);s.classList.toggle('is-past',k<i);});
     kicker.textContent=STAGES[i].kicker;
     swapCaption(STAGES[i].caption);
-    segs.forEach((seg,k)=>{seg.classList.toggle('filled',k<i);seg.classList.toggle('current',k===i);});
   }
 
   /* ── render loop (paused when section off-screen) ── */
