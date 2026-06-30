@@ -444,6 +444,18 @@ Branch: `feat/mobile-responsive-heavy-effects` · commit `c7e5c1d` (push ke orig
 
 ---
 
+## Mobile Responsive — Services AI Card Back-Face Overflow ✅ (2026-06-30)
+
+**Konsep:** bug spesifik dilaporkan user (screenshot) — back face kartu AI (#4 / "Artificial Intelligence Solutions") teksnya nembus keluar card di mobile. Murni CSS, mobile-only override.
+
+**1 perubahan:**
+
+- **AI card back-face overflow** (bug dilaporkan user). Back face AI punya konten paling banyak dari semua kartu (corner label absolut + deskripsi + label + 5 sub-item), sementara card di mobile di-cap `height: min(96vw, 420px)`. Default `.svc-back-ai { justify-content: center }` bikin konten yang lebih tinggi dari card meluber **dua arah**: atas nabrak corner label absolut ("ARTIFICIAL INTELLIGENCE SOLUTIONS" yang wrap jadi 2 baris di card sempit), bawah bullet terakhir ("Custom AI Integration") jatuh keluar tepi bawah. Fix (override di `@media (max-width: 768px)`): `justify-content: flex-start` (anchor ke atas, bukan center), `padding-top: 74px` biar lewat 2-baris corner label, tighten `gap`/font deskripsi+sub-item, + `overflow-y: auto` sebagai jaring pengaman. (index.html CSS ~572-578)
+
+**Verifikasi (Puppeteer iPhone, nav ArrowRight ke card #3 lalu flip):** 360px — corner clear, deskripsi penuh, 5 bullet semua di dalam frame, `scrollH===clientH` (no internal scroll), bullet terakhir 37px di dalam tepi bawah. 390px — sama, bullet terakhir 66px di dalam. Tidak ada overlap corner↔deskripsi di kedua lebar.
+
+---
+
 ## Referensi Visual
 
 | Elemen | Inspirasi |
