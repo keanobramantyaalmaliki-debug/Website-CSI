@@ -271,6 +271,7 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
 .la-sub { font-size: 13px; line-height: 1.85; color: #555; letter-spacing: 0.01em; max-width: 340px; margin-bottom: 44px; }
 .la-hint { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #333; transition: color 0.3s; min-height: 1.2em; }
 .la-hidden { display: none !important; }
+.la-list-mobile { display: none; }                /* shown only on mobile (graph hidden) */
 .la-node-num { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #2A2A2A; margin-bottom: 20px; }
 .la-node-name { font-size: clamp(34px, 3.4vw, 52px); font-weight: 300; letter-spacing: -0.03em; color: #F0F0F0; line-height: 1.1; margin-bottom: 20px; min-height: 1.15em; }
 .la-node-micro { font-size: 15px; line-height: 1.8; color: #555; max-width: 340px; min-height: 2.5em; }
@@ -528,6 +529,9 @@ html.is-touch #trail { display: none !important; }
 
   /* hero */
   #hero { padding: 0 var(--pad); }
+  /* glyph-assembly particle field is centered to the right of the desktop headline;
+     on a narrow viewport it overlaps the text, so drop it (decorative, no content) */
+  #hero-ambient { display: none; }
   .headline { font-size: clamp(34px, 9vw, 56px); }
   /* keep the desktop clock/coords, just shrink to fit */
   .hero-meta { display: flex; transform: scale(0.82); transform-origin: bottom right; }
@@ -564,13 +568,18 @@ html.is-touch #trail { display: none !important; }
   .svc-m-subs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
   .svc-m-sub { font-size: 11px; letter-spacing: 0.06em; color: #8A8A8A; border: 1px solid #303030; padding: 6px 11px; }
 
-  /* living architecture → stack: text on top, real 3D canvas below (~55vh) */
+  /* living architecture → drop the 3D WebGL graph (heavy + pointer-reliant on
+     phones); show a static list of the 6 reasons instead so no content is lost */
   #living-arch { grid-template-columns: 1fr; min-height: auto; }
-  html.is-touch .la-right { display: block; }
-  .la-right { min-height: 55vh; height: 55vh; }
-  .la-left { padding: 80px var(--pad) 32px; border-right: none; }
+  .la-right { display: none; }
+  .la-left { padding: 80px var(--pad); border-right: none; }
   .la-headline { font-size: clamp(26px, 7vw, 36px); }
   .la-sub { max-width: none; }
+  .la-list-mobile { display: flex; flex-direction: column; gap: 14px; margin-top: 36px; }
+  .la-m-item { border: 1px solid #232323; background: linear-gradient(155deg, #141414, #0D0D0D); padding: 24px; }
+  .la-m-num { font-size: 11px; letter-spacing: 0.16em; color: #555; font-variant-numeric: tabular-nums; }
+  .la-m-name { font-size: clamp(20px, 5.5vw, 26px); font-weight: 300; letter-spacing: -0.02em; color: #E8E8E8; margin: 10px 0 12px; line-height: 1.15; }
+  .la-m-micro { font-size: 13.5px; line-height: 1.7; color: #6E6E6E; }
 
   /* process → single column, stage on top, all steps lit */
   #process { padding: 96px var(--pad) 0; }
@@ -578,11 +587,10 @@ html.is-touch #trail { display: none !important; }
   /* minmax(0,1fr) (not bare 1fr) so the track min is 0, not min-content — the
      stage canvas's intrinsic width otherwise blows the column out past the viewport */
   .proc-grid { grid-template-columns: minmax(0, 1fr); }
-  .proc-steps, .proc-stage { min-width: 0; }
-  .proc-stage { position: relative; height: auto; order: -1; margin: 32px 0 8px; }
-  .stage-inner { padding: 0; }
-  .stage-canvas-wrap { max-width: none; aspect-ratio: 16 / 11; }
-  .stage-caption { margin-top: 22px; }
+  .proc-steps { min-width: 0; }
+  /* drop the generated motif canvas on phones — each step already carries its
+     own number/title/description, so no information is lost (no-redundancy) */
+  .proc-stage { display: none; }
   .proc-steps { padding: 24px 0 64px; }
   .proc-step { opacity: 1; padding: 32px 0 32px clamp(22px, 5vw, 34px); }
   .proc-step-title { font-size: clamp(24px, 7vw, 34px); }
@@ -851,6 +859,7 @@ html.is-touch #trail { display: none !important; }
         <p class="la-complete-label">Signal Complete</p>
         <h3 class="la-complete-head">From awareness<br>to action.</h3>
       </div>
+      <div class="la-list-mobile" id="laListMobile"></div>
     </div>
     <div class="la-right" id="laRight">
       <canvas id="la-canvas"></canvas>
@@ -1169,6 +1178,10 @@ window.scrollTo(0,0);
 (function(){
   const canvas=document.getElementById('hero-ambient');
   if(!canvas)return;
+  // Mobile: the glyph assembly is centered at x:0.76 — on a narrow viewport that
+  // lands on top of the headline/subtext (no empty space beside the text like on
+  // desktop). Hidden via CSS too; skip the whole rAF loop here so nothing draws.
+  if(window.IS_TOUCH||window.innerWidth<=768)return;
   const ctx=canvas.getContext('2d');
   let W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,window.IS_TOUCH?1.5:2);
   const coarse=window.matchMedia&&window.matchMedia('(hover:none)').matches;
@@ -1332,6 +1345,17 @@ camera.position.z = 2.8;
 const renderer = new THREE.WebGLRenderer({ canvas: hCanvas, antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.IS_TOUCH ? 1.5 : 2));
+/* Pull the camera back on portrait/narrow viewports so the sphere (radius ~1 +
+   displacement) fits horizontally instead of being clipped. Desktop (aspect ≥ 1)
+   keeps z = 2.8 untouched. Independent of the playEntry() collapse math, which
+   scales the canvas DOM element against window size, not the camera. */
+function fitHeroCamera(){
+  const aspect=window.innerWidth/window.innerHeight;
+  const halfH=Math.tan(55*Math.PI/180/2);
+  const needZ=1.3/(halfH*Math.min(1,aspect));
+  camera.position.z=Math.max(2.8,needZ);
+}
+fitHeroCamera();
 const geo = new THREE.IcosahedronGeometry(1, 4);
 const origPos = new Float32Array(geo.attributes.position.array);
 const nVerts = geo.attributes.position.count;
@@ -1843,6 +1867,10 @@ else document.addEventListener('DOMContentLoaded',buildServicesMobile);
   const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);}});},{threshold:0.15});
   ['processLabel','processHeadline'].forEach(id=>{const el=document.getElementById(id);if(el)io.observe(el);});
 
+  // Mobile: the motif canvas is display:none (steps already carry full content),
+  // so skip the entire stage init — no rAF loop, no scroll listener, no draw.
+  if(window.IS_TOUCH||window.innerWidth<=768)return;
+
   const steps=Array.from(document.querySelectorAll('#process .proc-step'));
   const canvas=document.getElementById('stageCanvas');
   const kicker=document.getElementById('stageKicker');
@@ -2233,9 +2261,22 @@ else document.addEventListener('DOMContentLoaded',buildServicesMobile);
     {label:'Long-Term Partnership',    micro:'We don\'t just deliver software—we become your technology partner, supporting continuous innovation and business growth.',                    pos:[ 2.3, 0.6, 0.1]},
   ];
 
-  // Touch: keep the real 3D graph (camera auto-orbits + auto-demo runs without a mouse;
-  // tap still fires click→activate). Hover/drag are mouse-only extras we simply skip.
-  if(window.IS_TOUCH && elHint) elHint.textContent='Tap any node to activate';
+  // Mobile: skip the entire 3D WebGL graph (heavy + pointer-reliant). Build a
+  // static list of the 6 reasons in the left column instead — no content lost,
+  // no second WebGL context / rAF loop running on phones.
+  if(window.IS_TOUCH||window.innerWidth<=768){
+    const wrap=document.getElementById('laListMobile');
+    if(elHint)elHint.style.display='none';   // "Click any node to activate" is meaningless without the graph
+    if(wrap&&!wrap.childElementCount){
+      ND.forEach((d,i)=>{
+        const item=document.createElement('div');
+        item.className='la-m-item';
+        item.innerHTML=`<span class="la-m-num">${String(i+1).padStart(2,'0')}</span><h3 class="la-m-name">${d.label}</h3><p class="la-m-micro">${d.micro}</p>`;
+        wrap.appendChild(item);
+      });
+    }
+    return;
+  }
 
   const N=ND.length;
   const EDGES=[[0,1],[0,2],[1,3],[1,4],[2,3],[2,4],[3,5],[4,5]];
