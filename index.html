@@ -569,6 +569,17 @@ html.is-touch #trail { display: none !important; }
     margin-left: calc(min(74vw, 320px) / -2); margin-top: calc(min(96vw, 420px) / -2); }
   .svc-drag-hint { top: calc(50% + min(54vw, 250px)); }
 
+  /* AI card has the most back-face content (desc + 5 sub-items); on the shorter
+     mobile card justify-content:center overflowed both edges — the top collided
+     with the absolute corner label, the last bullet fell past the bottom. Anchor
+     to the top instead and tighten the vertical rhythm so it all fits the frame. */
+  .svc-card-face.svc-back-ai { justify-content: flex-start; gap: 11px;
+    padding-top: 74px; padding-bottom: 14px; overflow-y: auto; }
+  .svc-back-ai .svc-back-desc { font-size: 12.5px; line-height: 1.5; }
+  .svc-back-ai .svc-back-label { margin-bottom: 2px; }
+  .svc-back-ai .svc-sub-list { gap: 7px; }
+  .svc-back-ai .svc-sub-item { font-size: 13.5px; }
+
   /* living architecture → drop the 3D WebGL graph (heavy + pointer-reliant on
      phones); show a static list of the 6 reasons instead so no content is lost */
   #living-arch { grid-template-columns: 1fr; min-height: auto; }
