@@ -174,7 +174,9 @@ Founder section dihapus dari `index.html` atas permintaan atasan (revisi PDF: "s
 - **Active-card FX:** flow-field particle canvas (cursor-reactive) di belakang judul kartu center; hanya 1 instance jalan, IO-gated (`svcVisible`), berhenti saat drag/section off-screen → time-exclusive dengan loop WebGL lain.
 - A11y: `.svc-stage` `tabindex=0`, ArrowLeft/Right navigasi kartu.
 
-**Mobile (`IS_TOUCH` / ≤768px):** 3D conveyor di-skip total (`buildServicesMobile()`), ganti list bertumpuk legible (`.svc-list-mobile`) — tiap layanan = nomor + judul + deskripsi (+ sub-item untuk AI). Drag-hint disembunyikan (`.svc-drag-hint display:none`) karena `.svc-pin` static di mobile dan akan bleed ke list.
+**Mobile (`IS_TOUCH` / ≤768px):** 3D conveyor **dipertahankan** (sama seperti desktop) atas permintaan user (2026-06-30) — drag-driven, jadi tidak ada scroll-jacking; finger-drag horizontal menggerakkan conveyor, vertical scroll halaman tetap jalan (`.svc-stage touch-action: pan-y`). Hanya `.svc-headline` diperkecil (`clamp(18px,5.5vw,26px)`) biar muat. Kartu 260px muat di 390px. `buildServicesMobile()` / `.svc-list-mobile` masih ada sebagai fallback (di-build tapi `display:none`) — tidak dipakai selama conveyor aktif. (Verifikasi Puppeteer iPhone 390×844 `/tmp/csi-shots/svc-mobile.js`: stage `display:flex`, touch-drag menggeser active card 0→1, page scrollY tetap berubah = tidak ter-trap.)
+
+> **Reversal:** keputusan lama "drop conveyor di mobile" dibalik — user menilai list bertumpuk terlalu makan tempat; conveyor lebih ringkas (1 layar) dan tetap interaktif via drag. Untuk revert ke list: kembalikan gate JS `if(window.IS_TOUCH||window.innerWidth<=768){buildServicesMobile();return;}` + CSS override `.svc-stage{display:none}` / `.svc-pin{position:static}` / `.svc-list-mobile{display:flex}`.
 
 **9 layanan:** Custom Software Development · Web Application Development · Mobile App Development · Artificial Intelligence Solutions · Enterprise Solutions · System Integration · UI/UX Design · Cloud & DevOps · Maintenance & Technical Support.
 
@@ -244,6 +246,8 @@ Founder section dihapus dari `index.html` atas permintaan atasan (revisi PDF: "s
 - Active: node number + scramble name + micro text + progress dots
 - Complete: "Signal Complete" + "From awareness to action"
 
+**Mobile (`IS_TOUCH` / ≤768px):** graph 3D di-skip total (`.la-right display:none` + early `return` di IIFE), diganti static list 6 alasan (`#laListMobile`) — context WebGL kedua + rAF loop tidak jalan. Lihat "Mobile Responsive — Drop Heavy Effects".
+
 ---
 
 ## Section — Our Development Process ✅ Implemented (2026-06-30)
@@ -261,6 +265,8 @@ Founder section dihapus dari `index.html` atas permintaan atasan (revisi PDF: "s
 **Catatan:** Deskripsi step 6 ("Deployment & Continuous Support") dilengkapi sendiri — tidak tercantum di PDF.
 
 **Visual 3D node graph TIDAK dipindah ke sini** — tetap di Living Architecture; Process pakai motif canvas terpisah.
+
+**Mobile (`IS_TOUCH` / ≤768px):** motif canvas di-drop (`.proc-stage display:none`) + stage init di-skip (early `return` setelah IO reveal label) — tiap step sudah punya nomor/judul/deskripsi sendiri, tidak ada konten hilang. Lihat "Mobile Responsive — Drop Heavy Effects".
 
 ---
 
@@ -353,7 +359,7 @@ Founder section dihapus dari `index.html` atas permintaan atasan (revisi PDF: "s
 - **Morph C → S → I:** 3 glyph (`LETTERS=['C','S','I']`) di-sample sekali saat font ready. Saat huruf terbentuk penuh (`ae>0.75`), tiap `HOLD=1.1` detik `curGlyph` maju ke huruf berikutnya dan target di-reassign → partikel glide morph C→S→I→C... selama kursor dekat. Tiap partikel dipetakan ke slot stabil (`i % pts.length`) per huruf agar morph bergerak jarak pendek yang koheren.
 - **Assembly motion:** critically-damped lerp (`p.x += (tx-x)*k`, k=0.10*ae) — glide masuk, TANPA spring/bounce (sengaja dihindari, user tidak mau "toon force mantul").
 - **Grenade burst:** saat kursor pernah masuk zona (`aT>0.6`) lalu keluar (`aT<0.25`), tiap partikel dapat impuls kecepatan radial keluar dari pusat (sp 6–8, acak) → meledak ke segala arah, friction 0.94 + flow nangkep balik. `curGlyph` di-reset ke C jadi reveal berikutnya selalu mulai dari "C".
-- **Mobile (`hover:none`):** auto assemble↔scatter pelan via sin wave (fallback tanpa kursor), ikut morph C→S→I.
+- **Mobile (`hover:none`):** auto assemble↔scatter pelan via sin wave (fallback tanpa kursor), ikut morph C→S→I. **Tapi di ≤768px efek ini di-disable total** (`#hero-ambient display:none` + early `return`) karena assembly di-center `x:0.76` menimpa headline di layar sempit — lihat "Mobile Responsive — Drop Heavy Effects".
 - **Entry:** `.hero-meta` fade-in bareng trail di `playEntry()` timeline.
 
 **Knob utama:** `PCOUNT=440`, `th=Math.min(W,H)*0.42`, `nearR/farR`, flow `*0.30`, lerp `k=0.10`, burst `sp=6+rand*8`, morph `HOLD=1.1`, huruf `LETTERS=['C','S','I']`.
@@ -375,6 +381,28 @@ Founder section dihapus dari `index.html` atas permintaan atasan (revisi PDF: "s
 - `lighter` blend mode, warna `hsla(210–230, 10%, 95%, 0.035)`
 - `position: fixed`, `z-index: 11`, `pointer-events: none`
 - Visible di semua section termasuk manifesto
+
+---
+
+## Mobile Responsive — Drop Heavy Effects ✅ (2026-06-30)
+
+**Konsep:** efek dekoratif yang di-tuning untuk desktop (lebar layar + pointer presisi) di viewport sempit malah menumpuk di atas teks atau menjalankan WebGL/rAF loop mahal tanpa benefit. Solusi: di `≤768px` / `IS_TOUCH`, sembunyikan efeknya **dan** skip loop JS-nya (bukan cuma `display:none` — loop tetap jalan kalau hanya CSS), tanpa kehilangan konten (no-redundancy: tiap efek yang dibuang sudah punya teks/list penggantinya).
+
+Branch: `feat/mobile-responsive-heavy-effects` · commit `c7e5c1d` (push ke origin). Total diff: `index.html` +53 / −12.
+
+**4 perubahan:**
+
+1. **Hero ambient (glyph C→S→I)** — assembly di-center pada `x:0.76`; di desktop ada ruang kosong di samping headline (max 900px), tapi di HP justru menimpa "Build Intelligence" + subtext → bug yang dilaporkan user (screenshot). Fix: `#hero-ambient { display:none }` di `@media(max-width:768px)` + early `return` di IIFE (`window.IS_TOUCH||innerWidth<=768`) supaya rAF loop tidak jalan. (index.html CSS ~532-534, JS ~1181-1184)
+
+2. **Hero sphere (Three.js)** — di aspect portrait sphere (radius ~1 + displacement) terpotong horizontal. Fix: `fitHeroCamera()` menarik kamera mundur (`needZ=1.3/(halfH*min(1,aspect))`, `Math.max(2.8,…)` jadi desktop aspect≥1 tetap z=2.8). Independen dari math collapse `playEntry()` (yang nge-scale elemen canvas, bukan kamera). (index.html ~1348-1358)
+
+3. **Process motif canvas** — kolom kiri sudah menamai+menomori tiap step, jadi motif kanan murni dekoratif → `.proc-stage { display:none }` + early `return` di IIFE setelah IO reveal label di-pasang (no rAF loop, no scroll listener, no draw). (index.html CSS ~591-593, JS ~1870-1872)
+
+4. **Living Architecture 3D node graph** — graph WebGL kedua, heavy + pointer-reliant. Fix: `.la-right { display:none }`, dan JS bikin **static list** 6 alasan di kolom kiri (`#laListMobile`, class `.la-list-mobile`/`.la-m-item`/`.la-m-num`/`.la-m-name`/`.la-m-micro`) dari array `ND` lalu `return` — context WebGL kedua + rAF loop-nya tidak jalan di HP. `laHint` ("Click any node…") di-hide karena tak ada graph. (index.html CSS 274 + 571-582, HTML 862, JS 2264-2279)
+
+**Pola seragam:** Services sudah pakai pola ini lebih dulu (`buildServicesMobile()` — 3D conveyor diganti `.svc-list-mobile`). Hero/Process/Living-Arch sekarang ikut pola yang sama: efek desktop = di-skip; konten = list/teks statis pengganti.
+
+**Verifikasi (Puppeteer, iPhone 390×844, `/tmp/csi-shots/mobile-verify.js`):** `laListItems:6`, `laRightDisplay:"none"`, `procStageDisplay:"none"`, hero-ambient `display:none` (blob hilang, headline/orb-glyph/subtext/CTA legible). Grayscale tetap bersih, tidak ada konten hilang.
 
 ---
 
