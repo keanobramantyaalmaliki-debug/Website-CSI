@@ -174,7 +174,9 @@ Founder section dihapus dari `index.html` atas permintaan atasan (revisi PDF: "s
 - **Active-card FX:** flow-field particle canvas (cursor-reactive) di belakang judul kartu center; hanya 1 instance jalan, IO-gated (`svcVisible`), berhenti saat drag/section off-screen → time-exclusive dengan loop WebGL lain.
 - A11y: `.svc-stage` `tabindex=0`, ArrowLeft/Right navigasi kartu.
 
-**Mobile (`IS_TOUCH` / ≤768px):** 3D conveyor di-skip total (`buildServicesMobile()`), ganti list bertumpuk legible (`.svc-list-mobile`) — tiap layanan = nomor + judul + deskripsi (+ sub-item untuk AI). Drag-hint disembunyikan (`.svc-drag-hint display:none`) karena `.svc-pin` static di mobile dan akan bleed ke list. (Pola ini jadi acuan untuk Hero/Process/Living-Arch — lihat "Mobile Responsive — Drop Heavy Effects".)
+**Mobile (`IS_TOUCH` / ≤768px):** 3D conveyor **dipertahankan** (sama seperti desktop) atas permintaan user (2026-06-30) — drag-driven, jadi tidak ada scroll-jacking; finger-drag horizontal menggerakkan conveyor, vertical scroll halaman tetap jalan (`.svc-stage touch-action: pan-y`). Hanya `.svc-headline` diperkecil (`clamp(18px,5.5vw,26px)`) biar muat. Kartu 260px muat di 390px. `buildServicesMobile()` / `.svc-list-mobile` masih ada sebagai fallback (di-build tapi `display:none`) — tidak dipakai selama conveyor aktif. (Verifikasi Puppeteer iPhone 390×844 `/tmp/csi-shots/svc-mobile.js`: stage `display:flex`, touch-drag menggeser active card 0→1, page scrollY tetap berubah = tidak ter-trap.)
+
+> **Reversal:** keputusan lama "drop conveyor di mobile" dibalik — user menilai list bertumpuk terlalu makan tempat; conveyor lebih ringkas (1 layar) dan tetap interaktif via drag. Untuk revert ke list: kembalikan gate JS `if(window.IS_TOUCH||window.innerWidth<=768){buildServicesMobile();return;}` + CSS override `.svc-stage{display:none}` / `.svc-pin{position:static}` / `.svc-list-mobile{display:flex}`.
 
 **9 layanan:** Custom Software Development · Web Application Development · Mobile App Development · Artificial Intelligence Solutions · Enterprise Solutions · System Integration · UI/UX Design · Cloud & DevOps · Maintenance & Technical Support.
 

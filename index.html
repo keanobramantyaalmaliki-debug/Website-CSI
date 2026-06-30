@@ -488,7 +488,7 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
 /* ══════════════════════
    FOOTER
 ══════════════════════ */
-#footer { border-top: 1px solid #262626; padding: 36px 2.5vw 44px; position: relative; z-index: 1; }
+#footer { border-top: 1px solid #262626; padding: 36px var(--pad) 44px; position: relative; z-index: 1; }
 .footer-top { display: flex; flex-direction: column; align-items: center; gap: 24px; padding-bottom: 32px; margin-bottom: 28px; border-bottom: 1px solid #1A1A1A; }
 .footer-logo { height: 30px; opacity: 1; mix-blend-mode: screen; }
 .footer-nav { display: flex; gap: 32px; list-style: none; }
@@ -509,7 +509,7 @@ html.is-touch #trail { display: none !important; }
 .role-photo-mobile { width: 100%; aspect-ratio: 16 / 10; background-size: cover; background-position: center; border: 1px solid #222; margin-bottom: 8px; }
 
 @media (max-width: 768px) {
-  :root { --pad: 20px; }
+  :root { --pad: 24px; }
 
   /* nav: minimal bar (logo + burger) stays fixed across all sections;
      override the GSAP entry fade-out that hides it on desktop */
@@ -552,21 +552,9 @@ html.is-touch #trail { display: none !important; }
   .arc-num { min-width: 20px; font-size: 11px; }
   .arc-region { display: none; }          /* region tag overflows the narrow arc on phones */
 
-  /* our services → drop the 3D conveyor (pin/scrub is heavy + pointer-reliant on phones);
-     show a stacked legible list instead */
-  #services { padding: 96px var(--pad); border-top: 1px solid #1E1E1E; }
-  .svc-pin { position: static; height: auto; overflow: visible; }
-  .svc-section-label { position: static; transform: none; text-align: left; margin-bottom: 18px; }
-  .svc-headline { position: static; transform: none; white-space: normal; text-align: left; font-size: clamp(26px, 7vw, 36px); margin-bottom: 48px; }
-  .svc-stage { display: none !important; }
-  .svc-drag-hint { display: none !important; }   /* desktop discovery aid; .svc-pin is static on mobile so it bleeds over the list */
-  .svc-list-mobile { display: flex; flex-direction: column; gap: 14px; }
-  .svc-m-item { border: 1px solid #232323; background: linear-gradient(155deg, #141414, #0D0D0D); padding: 24px; }
-  .svc-m-num { font-size: 11px; letter-spacing: 0.16em; color: #555; font-variant-numeric: tabular-nums; }
-  .svc-m-title { font-size: clamp(20px, 5.5vw, 26px); font-weight: 300; letter-spacing: -0.02em; color: #E8E8E8; margin: 10px 0 12px; line-height: 1.15; }
-  .svc-m-desc { font-size: 13.5px; line-height: 1.7; color: #6E6E6E; }
-  .svc-m-subs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-  .svc-m-sub { font-size: 11px; letter-spacing: 0.06em; color: #8A8A8A; border: 1px solid #303030; padding: 6px 11px; }
+  /* our services → keep the desktop draggable 3D conveyor on mobile too (drag-driven,
+     not scroll-pinned, so no scroll-jacking). Just shrink the headline to fit. */
+  .svc-headline { font-size: clamp(18px, 5.5vw, 26px); }
 
   /* living architecture → drop the 3D WebGL graph (heavy + pointer-reliant on
      phones); show a static list of the 6 reasons instead so no content is lost */
@@ -637,7 +625,7 @@ html.is-touch #trail { display: none !important; }
 }
 
 @media (max-width: 480px) {
-  :root { --pad: 16px; }
+  :root { --pad: 22px; }
   .headline { font-size: clamp(30px, 9vw, 44px); }
   .menu-nav a { font-size: clamp(26px, 9vw, 40px); }
   .cta-headline { font-size: clamp(30px, 8.5vw, 52px); }
@@ -1633,7 +1621,6 @@ function setupScrollAnimations() {
 (function(){
   const sec=document.getElementById('services');
   if(!sec)return;
-  if(window.IS_TOUCH||window.innerWidth<=768){buildServicesMobile();return;}
   const stage=sec.querySelector('.svc-stage');
   const cards=Array.from(sec.querySelectorAll('.svc-card'));
   const N=cards.length;
