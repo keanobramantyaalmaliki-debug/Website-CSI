@@ -500,6 +500,13 @@ Sebelumnya nol. Ditambah: meta description, canonical, favicon (`Logo/Logo-Final
 **#8 — Refresh-freeze keyboard (2026-06-30)**
 Page-reveal di-gate sampai first scroll intent (`onFirstScroll` → `playEntry()`). Pengguna keyboard tak pernah memicu `wheel`/`touchmove`, jadi halaman beku. Fix: listener `keydown` + set `SCROLL_KEYS` (Space/PageUp-Down/Arrow/Home/End) → `onFirstScrollKey` ikut memicu reveal.
 
+**#9 — Orb klik: reset ke sphere section (2026-07-01)**
+Orb kecil di heading hero (`#orbSlot`, sebelah "Build Intelligence") dibuat interaktif. Klik orb → `replayIntro()` me-*reverse* animasi intro: hero + navbar full + trail + subtext fade out, sphere `hCanvas` mekar balik dari orb ke full-screen dan **berhenti** di state idle awal (pre-scroll) — navbar-minimal + scroll-hint muncul lagi, scroll di-lock ulang (`page-loading`), scroll-position di-reset ke atas.
+- Gesture scroll-pertama di-refactor jadi pasangan `armFirstScroll()` / `disarmFirstScroll()` supaya bisa di-*re-arm* setelah reset → scroll lagi meng-collapse sphere ke orb, siklus berulang persis kunjungan pertama.
+- Guard `scrollAnimsBuilt` di `setupScrollAnimations()` — ScrollTrigger cuma dibangun sekali; replay hanya re-arm scroll (mencegah trigger dobel).
+- Guard `isReplaying` + cek `scrollY > innerHeight*0.5` mencegah timeline overlap & klik saat tidak di atas.
+- CSS: `#orbSlot` diberi `pointer-events:auto; cursor:pointer` + hover ring lebih terang (sebelumnya inherit `pointer-events:none` dari `#hero`).
+
 ---
 
 ## Pending / To Do

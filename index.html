@@ -128,8 +128,9 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
 #hero { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 0 var(--pad); z-index: 5; opacity: 0; pointer-events: none; }
 .hero-cta { pointer-events: auto; }
 .headline { font-size: clamp(36px, 5.5vw, 88px); font-weight: 400; color: #F0F0F0; line-height: 1.1; letter-spacing: -0.04em; max-width: 900px; }
-.orb-slot { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; width: 0.58em; height: 0.58em; margin: 0 0.04em 0 0.34em; position: relative; }
-.orb-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,0.28); animation: pulse-ring 3.5s ease-in-out infinite; }
+.orb-slot { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; width: 0.58em; height: 0.58em; margin: 0 0.04em 0 0.34em; position: relative; pointer-events: auto; cursor: pointer; }
+.orb-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,0.28); animation: pulse-ring 3.5s ease-in-out infinite; transition: border-color 0.3s; }
+#orbSlot:hover .orb-ring { border-color: rgba(255,255,255,0.55); }
 .orb-core { width: 28%; height: 28%; border-radius: 50%; background: rgba(255,255,255,0.8); box-shadow: 0 0 10px 3px rgba(255,255,255,0.15); animation: pulse-core 3.5s ease-in-out infinite; }
 @keyframes pulse-ring { 0%, 100% { transform: scale(1); opacity: 0.45; } 50% { transform: scale(1.1); opacity: 0.85; } }
 @keyframes pulse-core { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.2); opacity: 1; } }
@@ -1502,24 +1503,64 @@ function playEntry() {
     ScrollTrigger.refresh();
   });
 }
+
+/* ── Orb click → reverse the intro back to the idle "sphere section" ──
+   The sphere blooms from the orb to full-screen and STAYS there — restoring the
+   pre-scroll state: hero/full-navbar hidden, minimal navbar + scroll hint back,
+   scroll re-locked, and the first-scroll gesture re-armed. Scrolling again then
+   collapses the sphere into the orb once more, exactly like the first visit. */
+let isReplaying = false;
+function replayIntro() {
+  if (isReplaying) return;
+  // only meaningful near the top, where the sphere is rendering & the orb is visible
+  if (window.scrollY > window.innerHeight * 0.5) return;
+  isReplaying = true;
+
+  const tl = gsap.timeline({ onComplete: () => {
+    // Land in the exact idle state the page loads in, then re-arm the collapse gesture.
+    window.scrollTo(0,0); document.documentElement.scrollTop=0;
+    document.documentElement.classList.add('page-loading');   // re-lock scroll + hide <main>
+    document.getElementById('navbar').classList.remove('is-visible');
+    armFirstScroll();
+    isReplaying = false;
+  }});
+  // fade out everything that belongs to the revealed hero state
+  tl.to(['#hero', '#navbar', '#trail', '.subtext', '.hero-cta', '#heroMeta'],
+        {opacity:0, duration:0.5, ease:'power2.in'});
+  // BLOOM: orb → full-screen sphere (reverse of playEntry's collapse tween)
+  tl.to(hCanvas, {x:0, y:0, scale:1, opacity:1, duration:1.1, ease:'power4.inOut', transformOrigin:'center center'}, '-=0.25');
+  // bring back the pre-scroll chrome: minimal navbar + scroll hint
+  tl.to('#navbar-minimal', {opacity:1, y:0, duration:0.5, ease:'power2.out'}, '-=0.4');
+  tl.to('#scrollHint', {opacity:1, duration:0.5, ease:'power2.out'}, '<');
+}
 /* keys that imply a scroll intent — keyboard users never fire wheel/touchmove,
    so without these the page would stay frozen until a mouse-wheel/touch event */
 const SCROLL_KEYS=new Set([' ','Spacebar','PageDown','PageUp','ArrowDown','ArrowUp','End','Home']);
 function onFirstScrollKey(e){ if(SCROLL_KEYS.has(e.key)) onFirstScroll(); }
-function onFirstScroll() {
+function disarmFirstScroll() {
   window.removeEventListener('wheel', onFirstScroll);
   window.removeEventListener('touchmove', onFirstScroll);
   window.removeEventListener('scroll', onFirstScroll);
   window.removeEventListener('keydown', onFirstScrollKey);
   const cta = document.querySelector('.hero-cta');
   if (cta) cta.removeEventListener('click', onFirstScroll);
+}
+/* (re)arm the gesture that collapses the idle full-screen sphere into the orb —
+   used on first load and again after an orb-click reset back to the sphere section */
+function armFirstScroll() {
+  window.addEventListener('wheel', onFirstScroll, {passive:true});
+  window.addEventListener('touchmove', onFirstScroll, {passive:true});
+  window.addEventListener('scroll', onFirstScroll, {passive:true});  // scrollbar drag / programmatic
+  window.addEventListener('keydown', onFirstScrollKey);
+  const cta = document.querySelector('.hero-cta');
+  if (cta) cta.addEventListener('click', onFirstScroll);
+}
+function onFirstScroll() {
+  disarmFirstScroll();
   gsap.to('#scrollHint', {opacity:0, duration:0.3});
   playEntry();
 }
-window.addEventListener('wheel', onFirstScroll, {passive:true});
-window.addEventListener('touchmove', onFirstScroll, {passive:true});
-window.addEventListener('scroll', onFirstScroll, {passive:true});  // scrollbar drag / programmatic
-window.addEventListener('keydown', onFirstScrollKey);
+armFirstScroll();
 
 /* Recompute pinned ScrollTriggers after viewport/orientation change (debounced).
    Ignore mobile address-bar height jitter: only refresh when width actually changes. */
@@ -1532,11 +1573,16 @@ window.addEventListener('keydown', onFirstScrollKey);
     rt=setTimeout(()=>{if(window.ScrollTrigger)ScrollTrigger.refresh();},250);
   });
 })();
-const _heroCta = document.querySelector('.hero-cta');
-if (_heroCta) _heroCta.addEventListener('click', onFirstScroll);
+
+/* Orb click replays the intro (independent of the first-scroll trigger above) */
+const _orb = document.getElementById('orbSlot');
+if (_orb) _orb.addEventListener('click', replayIntro);
 
 /* ── Scroll animations (after hero entry) ── */
+let scrollAnimsBuilt = false;
 function setupScrollAnimations() {
+  if (scrollAnimsBuilt) return;   // build the ScrollTriggers once; replays only re-arm scroll
+  scrollAnimsBuilt = true;
 
   gsap.to('#hero',{opacity:0,scrollTrigger:{trigger:'#manifesto',start:'top 85%',end:'top 30%',scrub:1}});
 
