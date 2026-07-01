@@ -193,7 +193,7 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
    BEHIND the cards instead of stacking its additive light on top of them */
 #services { position: relative; z-index: 12; border-top: 1px solid #1E1E1E; }
 .svc-pin { position: relative; height: 100vh; height: 100dvh; overflow: hidden; }
-.svc-section-label { position: absolute; top: 48px; left: 50%; transform: translateX(-50%); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #5A5A5A; white-space: nowrap; z-index: 4; }
+.svc-section-label { position: absolute; top: 48px; left: 50%; transform: translateX(-50%); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #9A9A9A; white-space: nowrap; z-index: 4; }
 .svc-headline { position: absolute; top: 74px; left: 50%; transform: translateX(-50%); width: min(700px, 90vw); font-size: clamp(20px, 2.4vw, 34px); font-weight: 300; letter-spacing: -0.025em; color: #D0D0D0; text-align: center; z-index: 4; }
 
 /* 3D stage */
@@ -361,8 +361,6 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
 ══════════════════════ */
 #process { position: relative; padding: 120px 2.5vw 0; z-index: 1; border-top: 1px solid #1E1E1E; }
 .proc-head { margin-bottom: 16px; }
-.process-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: #5A5A5A; margin-bottom: 28px; opacity: 0; transform: translateY(8px); transition: opacity 0.6s ease, transform 0.6s ease; }
-.process-label.visible { opacity: 1; transform: none; }
 .process-headline { font-size: clamp(44px, 5.5vw, 80px); font-weight: 300; letter-spacing: -0.03em; color: #F0F0F0; line-height: 1.08; opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s; }
 .process-headline.visible { opacity: 1; transform: none; }
 
@@ -915,7 +913,6 @@ html.is-touch #trail { display: none !important; }
   <!-- Our Development Process -->
   <section id="process">
     <div class="proc-head">
-      <p class="process-label" id="processLabel">How we work</p>
       <h2 class="process-headline" id="processHeadline">Our Development Process.</h2>
     </div>
     <div class="proc-grid">
@@ -1970,7 +1967,7 @@ else document.addEventListener('DOMContentLoaded',buildServicesMobile);
    shows what the stage *does*, plus a one-word verb essence and a caption. */
 (function(){
   const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);}});},{threshold:0.15});
-  ['processLabel','processHeadline'].forEach(id=>{const el=document.getElementById(id);if(el)io.observe(el);});
+  ['processHeadline'].forEach(id=>{const el=document.getElementById(id);if(el)io.observe(el);});
 
   // Mobile: the motif canvas is display:none (steps already carry full content),
   // so skip the entire stage init — no rAF loop, no scroll listener, no draw.
