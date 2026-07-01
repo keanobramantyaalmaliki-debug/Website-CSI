@@ -368,11 +368,12 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
 
 .proc-grid { display: grid; grid-template-columns: 42% 58%; align-items: start; }
 
-/* Left: scrolling steps — generous top/bottom padding so the first and last
-   step centers fall WITHIN the sticky pane's pinned range (pane is 100vh; it
-   can only stay pinned for stepsHeight − 100vh, so each step center must sit
-   ≥ ~50vh from the column edges or it scrolls past an empty right pane). */
-.proc-steps { padding: 42vh 0 42vh; }
+/* Left: scrolling steps — top/bottom runway so the first and last step centers
+   fall within the sticky pane's pinned range (pane is 100vh; it can only stay
+   pinned for stepsHeight − 100vh). Top trimmed to 24vh to tighten the gap under
+   the headline (step 0 then activates just before the pane fully pins — a minor,
+   barely-visible sync loosening); bottom kept larger to preserve last-step sync. */
+.proc-steps { padding: 16vh 0 36vh; }
 .proc-step { position: relative; padding: clamp(40px, 6vh, 88px) clamp(20px, 3vw, 56px) clamp(40px, 6vh, 88px) clamp(28px, 3vw, 52px); border-left: 1px solid #1E1E1E; opacity: 0.32; transition: opacity 0.5s ease; }
 .proc-step::before { content: ''; position: absolute; left: -5px; top: calc(clamp(40px, 6vh, 88px) + 6px); width: 9px; height: 9px; border-radius: 50%; background: #141414; border: 1px solid #333; transition: background 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease, transform 0.45s ease; }
 .proc-step::after { content: ''; position: absolute; left: 0; top: 0; width: 1px; height: 0; background: linear-gradient(180deg, #AAA, #555); transition: height 0.5s cubic-bezier(0.16,1,0.3,1); }
@@ -1138,6 +1139,8 @@ html.is-touch #trail { display: none !important; }
       <img src="Logo/Logo-Final.png" alt="cogniti" class="footer-logo" loading="lazy">
       <nav><ul class="footer-nav">
         <li><a href="#deployments">Deployments</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#living-arch">Approach</a></li>
         <li><a href="#careers">Careers</a></li>
         <li><a href="#cta">Contact</a></li>
       </ul></nav>
