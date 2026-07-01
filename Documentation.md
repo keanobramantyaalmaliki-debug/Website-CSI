@@ -507,6 +507,16 @@ Orb kecil di heading hero (`#orbSlot`, sebelah "Build Intelligence") dibuat inte
 - Guard `isReplaying` + cek `scrollY > innerHeight*0.5` mencegah timeline overlap & klik saat tidak di atas.
 - CSS: `#orbSlot` diberi `pointer-events:auto; cursor:pointer` + hover ring lebih terang (sebelumnya inherit `pointer-events:none` dari `#hero`).
 
+**#10 — Navbar: tambah link section Services & Approach (2026-07-01)**
+Setelah revisi konten, halaman punya 8 section tapi navbar cuma nge-link 3 (Deployments/Careers/Contact). Empat section tak ter-link: manifesto, services, living-arch, process. Dikurasi **+2 yang paling menjawab intent B2B**, bukan tambah semua (navbar minimal = kekuatan brand cogniti).
+- **Navbar final (5 item, urut scroll):** Deployments · Services · Approach · Careers · Contact.
+  - `Services` → `#services` (gap paling kritis: pertanyaan #1 klien "kalian ngerjain apa?").
+  - `Approach` → `#living-arch` (section "Why cogniti?", diferensiasi/trust). Label dipilih "Approach" (noun pendek, sejajar item lain) alih-alih "Why cogniti".
+  - **Skip** Process (sekunder) & Manifesto (storytelling saat scroll, bukan destinasi).
+- **Sinkron 2 lokasi nav:** `#navbar .nav-links` (desktop) DAN `#menu-overlay .menu-nav` (mobile). Sekalian membereskan inkonsistensi lama — overlay tadinya punya "Manifesto" yang tak ada di desktop; kini keduanya identik.
+- **CSS guard `@media (max-width:1024px)`:** gap `.nav-links` 40→26px + font 12.5→11.5px biar 5 link tak nabrak logo / "Talk to us" di laptop sempit. Di ≤768px desktop nav hilang total (diganti overlay), jadi aman.
+- Handler smooth-scroll `.menu-nav a` sudah generik → link baru otomatis jalan.
+
 ---
 
 ## Pending / To Do

@@ -80,6 +80,8 @@ body { background: #0A0A0A; color: #F0F0F0; font-family: 'Inter', -apple-system,
 .nav-links { display: flex; align-items: center; gap: 40px; position: absolute; left: 50%; transform: translateX(-50%); }
 .nav-links a { font-size: 12.5px; letter-spacing: 0.11em; text-transform: uppercase; color: #555; text-decoration: none; transition: color 0.25s; white-space: nowrap; }
 .nav-links a:hover { color: #E0E0E0; }
+/* tighten spacing on narrow laptops so 5 centered links don't collide with the logo / "Talk to us" (desktop nav hides entirely ≤768px) */
+@media (max-width: 1024px) { .nav-links { gap: 26px; } .nav-links a { font-size: 11.5px; letter-spacing: 0.08em; } }
 .nav-cta { font-size: 12.5px; letter-spacing: 0.11em; text-transform: uppercase; color: #555; text-decoration: none; display: flex; align-items: center; gap: 10px; transition: color 0.25s; flex-shrink: 0; }
 .nav-cta::after { content: ''; display: block; width: 20px; height: 1px; background: currentColor; transition: width 0.3s ease; }
 .nav-cta:hover { color: #E0E0E0; }
@@ -695,8 +697,9 @@ html.is-touch #trail { display: none !important; }
       </div>
     </div>
     <nav class="menu-nav">
-      <div class="menu-nav-item"><a href="#manifesto">Manifesto</a></div>
       <div class="menu-nav-item"><a href="#deployments">Deployments</a></div>
+      <div class="menu-nav-item"><a href="#services">Services</a></div>
+      <div class="menu-nav-item"><a href="#living-arch">Approach</a></div>
       <div class="menu-nav-item"><a href="#careers">Careers</a></div>
       <div class="menu-nav-item"><a href="#cta">Contact</a></div>
     </nav>
@@ -717,6 +720,8 @@ html.is-touch #trail { display: none !important; }
   <a class="nav-brand" href="#"><img src="Logo/Logo-Final.png" alt="cogniti"></a>
   <div class="nav-links">
     <a href="#deployments">Deployments</a>
+    <a href="#services">Services</a>
+    <a href="#living-arch">Approach</a>
     <a href="#careers">Careers</a>
     <a href="#cta">Contact</a>
   </div>
