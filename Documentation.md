@@ -530,6 +530,11 @@ Footer terasa kosong (cuma logo + nav + copyright). Ditambah baris kontak di ant
 - **Social** Instagram / LinkedIn / Facebook — sebelumnya hanya di menu overlay, kini juga di footer (`target="_blank" rel="noopener noreferrer"`).
 - Gaya konsisten dgn footer existing (uppercase kecil, centered). Mobile ≤480px: email & alamat stack vertikal, separator "·" di-hide.
 
+**#13 — Label section: hapus "How we work" + terangin "Our Services" (2026-07-01)**
+Dua penyesuaian kicker section:
+- **Process:** label `.process-label` "How we work" **dihapus** (HTML `<p id="processLabel">`, referensi JS di IntersectionObserver, dan CSS `.process-label` + `.process-label.visible` yang jadi tak terpakai). Section kini langsung mulai dari heading "Our Development Process.".
+- **Services:** label `.svc-section-label` "Our Services" kurang visible (redup) → warna **#5A5A5A → #9A9A9A** + ukuran **9px → 10px** biar lebih kebaca sebagai kicker, tetap subtle/minimal.
+
 ---
 
 ## Pending / To Do
