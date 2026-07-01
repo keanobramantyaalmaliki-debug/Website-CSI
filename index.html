@@ -714,7 +714,7 @@ html.is-touch #trail { display: none !important; }
       <div class="menu-nav-item"><a href="#cta">Contact</a></div>
     </nav>
     <div class="menu-right">
-      <a class="menu-right-item" href="#cta"><span>Talk To Us</span><span class="dot"></span></a>
+      <a class="menu-right-item" href="#cta"><span>Talk to us</span><span class="dot"></span></a>
     </div>
   </div>
 </div>
@@ -1504,7 +1504,10 @@ let time=0;
 })();
 
 /* ── Entry animation ── */
+let entryPlayed = false;
 function playEntry() {
+  if (entryPlayed) return;   // re-entry guard: never stack two collapse timelines
+  entryPlayed = true;
   const orbSlot=document.getElementById('orbSlot');
   const rect=orbSlot.getBoundingClientRect();
   const targetX=rect.left+rect.width/2, targetY=rect.top+rect.height/2;
@@ -1549,6 +1552,7 @@ function replayIntro() {
     window.scrollTo(0,0); document.documentElement.scrollTop=0;
     document.documentElement.classList.add('page-loading');   // re-lock scroll + hide <main>
     document.getElementById('navbar').classList.remove('is-visible');
+    entryPlayed = false;   // allow the collapse to play again on the next scroll
     armFirstScroll();
     isReplaying = false;
   }});
@@ -1626,7 +1630,7 @@ function setupScrollAnimations() {
 
   /* Manifesto */
   const COPY=[
-    "Software connected information. Intelligence connects decisions.",
+    "Software connects information. Intelligence connects decisions.",
     "Organizations are drowning in data. Yet struggling to act.",
     "The future belongs not to those who collect, but to those who act.",
     "Intelligence should exist across every interaction. Every workflow. Every decision."
@@ -2733,9 +2737,9 @@ else document.addEventListener('DOMContentLoaded',buildServicesMobile);
 
   /* Label positions (updated each frame) */
   function updateLabels(){
+    const r=canvas.getBoundingClientRect();   // read once per frame, not per node
     nodes.forEach((n,i)=>{
       const p=n.grp.position.clone().project(laCam);
-      const r=canvas.getBoundingClientRect();
       labelEls[i].style.left=((p.x+1)/2*r.width)+'px';
       labelEls[i].style.top=((-p.y+1)/2*r.height)+'px';
       const depth=n.grp.position.distanceTo(laCam.position);
