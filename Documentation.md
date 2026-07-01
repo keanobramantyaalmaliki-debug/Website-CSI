@@ -513,9 +513,15 @@ Setelah revisi konten, halaman punya 8 section tapi navbar cuma nge-link 3 (Depl
   - `Services` → `#services` (gap paling kritis: pertanyaan #1 klien "kalian ngerjain apa?").
   - `Approach` → `#living-arch` (section "Why cogniti?", diferensiasi/trust). Label dipilih "Approach" (noun pendek, sejajar item lain) alih-alih "Why cogniti".
   - **Skip** Process (sekunder) & Manifesto (storytelling saat scroll, bukan destinasi).
-- **Sinkron 2 lokasi nav:** `#navbar .nav-links` (desktop) DAN `#menu-overlay .menu-nav` (mobile). Sekalian membereskan inkonsistensi lama — overlay tadinya punya "Manifesto" yang tak ada di desktop; kini keduanya identik.
+- **Sinkron 3 lokasi nav:** `#navbar .nav-links` (desktop), `#menu-overlay .menu-nav` (mobile), DAN `.footer-nav` (footer). Sekalian membereskan inkonsistensi lama — overlay tadinya punya "Manifesto" yang tak ada di desktop; footer tadinya masih 3 item lama. Kini ketiganya identik.
 - **CSS guard `@media (max-width:1024px)`:** gap `.nav-links` 40→26px + font 12.5→11.5px biar 5 link tak nabrak logo / "Talk to us" di laptop sempit. Di ≤768px desktop nav hilang total (diganti overlay), jadi aman.
 - Handler smooth-scroll `.menu-nav a` sudah generik → link baru otomatis jalan.
+
+**#11 — Process: rapetin gap heading → step pertama (2026-07-01)**
+Gap antara "Our Development Process." dan step "Discovery" kejauhan (hampir 1 layar kosong). Penyebab: `.proc-steps { padding: 42vh 0 42vh }` — runway scroll yang disengaja supaya tiap step di-highlight pas pusatnya mencapai tengah viewport (`anchor = innerHeight*0.5`), selaras dgn panel visual kanan `.proc-stage` yang sticky 100vh.
+- Fix: padding atas **42vh → 16vh** (rapetin gap), bawah **42vh → 36vh** (dijaga lebih besar buat sync step terakhir).
+- Trade-off (minor): step-0 aktif sedikit lebih awal sebelum panel kanan fully pinned — perbedaan tipis, hampir tak kelihatan.
+- Breakpoint mobile `.proc-steps` (`24px 0 64px`) tak disentuh.
 
 ---
 
