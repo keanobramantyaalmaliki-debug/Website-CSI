@@ -523,6 +523,13 @@ Gap antara "Our Development Process." dan step "Discovery" kejauhan (hampir 1 la
 - Trade-off (minor): step-0 aktif sedikit lebih awal sebelum panel kanan fully pinned — perbedaan tipis, hampir tak kelihatan.
 - Breakpoint mobile `.proc-steps` (`24px 0 64px`) tak disentuh.
 
+**#12 — Footer: isi baris kontak + social (2026-07-01)**
+Footer terasa kosong (cuma logo + nav + copyright). Ditambah baris kontak di antara `footer-top` dan `footer-bottom`, **pakai data yang sudah ada di site** (tak mengarang):
+- **Email** `hello@cogniti.id` — clickable `mailto:`, warna sedikit lebih terang (utility utama footer B2B). Email juga diganti di handler form CTA (`window.location.href` mailto) supaya konsisten (2 tempat).
+- **Alamat kantor** `Jl. Kediri No.27, Tuban, Badung, Bali 80361` (dari company-profile) — bukti perusahaan nyata → trust.
+- **Social** Instagram / LinkedIn / Facebook — sebelumnya hanya di menu overlay, kini juga di footer (`target="_blank" rel="noopener noreferrer"`).
+- Gaya konsisten dgn footer existing (uppercase kecil, centered). Mobile ≤480px: email & alamat stack vertikal, separator "·" di-hide.
+
 ---
 
 ## Pending / To Do
