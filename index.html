@@ -14,11 +14,11 @@
 <meta property="og:title" content="cogniti — Intelligence Infrastructure">
 <meta property="og:description" content="Intelligence infrastructure for digital transformation, operational visibility, and decision support.">
 <meta property="og:url" content="https://cogniti.id/">
-<meta property="og:image" content="https://cogniti.id/Photo-Founder-section/Foto%20Speaking.jpg">
+<meta property="og:image" content="https://cogniti.id/Photo-Founder-section/ICO-cogniti.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="cogniti — Intelligence Infrastructure">
 <meta name="twitter:description" content="Intelligence infrastructure for digital transformation, operational visibility, and decision support.">
-<meta name="twitter:image" content="https://cogniti.id/Photo-Founder-section/Foto%20Speaking.jpg">
+<meta name="twitter:image" content="https://cogniti.id/Photo-Founder-section/ICO-cogniti.jpg">
 <script>document.documentElement.classList.add('page-loading');if('scrollRestoration'in history){history.scrollRestoration='manual';}window.scrollTo(0,0);window.IS_TOUCH=!!(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse)').matches);if(window.IS_TOUCH)document.documentElement.classList.add('is-touch');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1415,7 +1415,11 @@ fitHeroCamera();
 const geo = new THREE.IcosahedronGeometry(1, 4);
 const origPos = new Float32Array(geo.attributes.position.array);
 const nVerts = geo.attributes.position.count;
-const BASE_BRIGHT = 0.28;
+/* Touch devices have no mousemove, so the ripple-glow that lights the sphere on
+   desktop never fires — and fitHeroCamera() pulls the camera back on portrait,
+   shrinking it further. Lift the idle brightness, point size, and wireframe
+   opacity on touch so the sphere reads clearly without hover. */
+const BASE_BRIGHT = window.IS_TOUCH ? 0.42 : 0.28;
 const colorBase = new Float32Array(nVerts*3);
 for (let i = 0; i < colorBase.length; i++) colorBase[i] = BASE_BRIGHT;
 geo.setAttribute('color', new THREE.BufferAttribute(colorBase, 3));
@@ -1424,9 +1428,9 @@ glowGeo.setAttribute('position', geo.attributes.position);
 if (geo.index) glowGeo.setIndex(geo.index);
 const colorGlow = new Float32Array(nVerts*3);
 glowGeo.setAttribute('color', new THREE.BufferAttribute(colorGlow, 3));
-const wireMesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.06 }));
+const wireMesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: window.IS_TOUCH ? 0.10 : 0.06 }));
 scene.add(wireMesh);
-const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.016, transparent: true, opacity: 1.0, vertexColors: true }));
+const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: window.IS_TOUCH ? 0.022 : 0.016, transparent: true, opacity: 1.0, vertexColors: true }));
 scene.add(pts);
 const wireGlow = new THREE.Mesh(glowGeo, new THREE.MeshBasicMaterial({ vertexColors: true, wireframe: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
 scene.add(wireGlow);
